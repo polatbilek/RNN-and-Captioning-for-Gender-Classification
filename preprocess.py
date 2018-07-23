@@ -4,7 +4,7 @@ from parameters import FLAGS
 import xml.etree.ElementTree as xmlParser
 from nltk.tokenize import TweetTokenizer
 import os
-
+import sys
 
 # Read GloVe embeddings
 #
@@ -20,7 +20,7 @@ def readGloveEmbeddings(path, embedding_size):
     lines = lambda: itertools.islice(in_file, DOC_LIMIT)
     model_tuple = lambda: ((line[0], [float(value) for value in line[1:]]) for line in lines())
 
-    # extract the keys and values so we can iterate over theö
+    # extract the keys and values so we can iterate over them
     model_dict = dict(model_tuple())
     temp_vocab = list(model_dict.keys())
     temp_vectors = list(model_dict.values())
@@ -43,7 +43,13 @@ def readGloveEmbeddings(path, embedding_size):
     vectors.append(np.zeros(embedding_size))
 
     embeddings = np.array(vectors)
-    return vocab, embeddings
+
+    vocabulary = {}
+
+    for i in range(len(vocab)):
+        vocabulary[vocab[i]] = i
+
+    return vocabulary, embeddings
 
 
 # Reads training dataset
@@ -51,9 +57,10 @@ def readGloveEmbeddings(path, embedding_size):
 #		           male   = [1,0]
 #
 # input:  string = path to the zip-file corresponding to the training data
-# output: list ("training_set")  = author - tweet pairs
-#	      dict ("target_values") = author(key) - ground-truth(value) pairs
-#	      list ("seq-lengths")   = lenght of each tweet in the list "training_set"
+# output: list ("tweets")        = List of tweets
+#         list ("users")         = List of users
+#	      dict ("target_values") = Author(key) - ground-truth(value) pairs
+#	      list ("seq-lengths")   = Lenght of each tweet in the list "training_set"
 def readData(path):
     path = path + "/" + FLAGS.lang + "/text"
     tokenizer = TweetTokenizer()
@@ -94,7 +101,10 @@ def readData(path):
                     training_set.append([author_id, words])  # author-tweet pairs
                     seq_lengths.append(len(words))  # length of tweets will be fed to rnn as timestep size
 
-    return training_set, target_values, seq_lengths
+    tweets = [row[1] for row in training_set]
+    users = [row[0] for row in training_set]
+
+    return tweets, users, target_values, seq_lengths
 
 
 # Prepares test data
@@ -176,31 +186,30 @@ def word2id(tweets, vocab):
 # 	      list (batch_output)      - Target values to be fed to the rnn
 #	      list (batch_sequencelen) - Number of words in each tweet(gives us the # of time unrolls)
 def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
-    start = iter_no * FLAGS.batch_size
-    end = iter_no * FLAGS.batch_size + FLAGS.batch_size
-    if end > len(tweets):
-        end = len(tweets)
+	start = iter_no * FLAGS.batch_size
+	end = iter_no * FLAGS.batch_size + FLAGS.batch_size
+	if end > len(tweets):
+		end = len(tweets)
 
-    batch_tweets = tweets[start:end]
-    batch_users = users[start:end]
-    batch_sequence_length = seq_len[start:end]
+	batch_tweets = tweets[start:end]
+	batch_users = users[start:end]
+	batch_sequencelen = seq_len[start:end]
 
-    batch_output_temp = user2target(batch_users, targets)
-    batch_output = batch_output_temp[0]
+	batch_output_temp = user2target(batch_users, targets)
 
-    # prepare input by adding padding
-    tweet_lengths = [len(tweet) for tweet in batch_tweets]
-    max_tweet_length = max(tweet_lengths)
+	# prepare input by adding padding
+	tweet_lengths = [len(tweet) for tweet in batch_tweets]
+	max_tweet_length = max(tweet_lengths)
 
-    batch_input = []
-    for i in range(FLAGS.batch_size):
-        tweet = batch_tweets[i]
-        padded_tweet = []
-        for j in range(max_tweet_length):
-            if len(tweet) > j:
-                padded_tweet.append(tweet[j])
-            else:
-                padded_tweet.append("PAD")
-        batch_input.append(padded_tweet)
+	batch_input = []
+	for i in range(FLAGS.batch_size):
+		tweet = batch_tweets[i]
+		padded_tweet = []
+		for j in range(max_tweet_length):
+			if len(tweet) > j:
+				padded_tweet.append(tweet[j])
+			else:
+				padded_tweet.append("PAD")
+		batch_input.append(padded_tweet)
 
-    return batch_input, np.asarray(batch_output).reshape(1, 2), batch_sequence_length
+	return batch_input, batch_output_temp, batch_sequencelen

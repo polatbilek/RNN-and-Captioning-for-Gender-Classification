@@ -10,7 +10,6 @@ class flags(object):
 		self.lang = "en"
 
 		# Model Hyperparameters
-		self.embedding_dim = 25
 		self.num_filters = 75
 		self.l2_reg_lambda = 0.0005
 		self.word_embedding_size = 50
@@ -19,7 +18,7 @@ class flags(object):
 		self.sequence_length = 190
 
 		# Training parameters
-		self.batch_size = 100
+		self.batch_size = 10
 		self.num_epochs = 20
 		self.evaluate_every = 25
 
