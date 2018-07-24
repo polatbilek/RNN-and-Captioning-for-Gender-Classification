@@ -5,11 +5,9 @@ import xml.etree.ElementTree as xmlParser
 from nltk.tokenize import TweetTokenizer
 import os
 import sys
+import random
 
-
-
-
-######################################################################################################################
+#################################################################################
 # Read GloVe embeddings
 #
 # input: String (path)        - Path of embeddings to read
@@ -56,6 +54,7 @@ def readGloveEmbeddings(path, embedding_size):
     return vocabulary, embeddings
 
 
+#################################################################################
 # Reads training dataset
 # one-hot vectors: female = [0,1]
 #		           male   = [1,0]
@@ -111,6 +110,7 @@ def readData(path):
     return tweets, users, target_values, seq_lengths
 
 
+#################################################################################
 # Prepares test data
 #
 # input: List (tweets)  - List of tweets of a user, each tweet has words as list
@@ -141,6 +141,7 @@ def prepTestData(tweets, user, target):
     return test_input, test_output
 
 
+#################################################################################
 # Returns the one-hot gender vectors of users in correct order (index matching)
 #
 # input: list (users)   - List of usernames
@@ -154,6 +155,7 @@ def user2target(users, targets):
     return target_values
 
 
+#################################################################################
 # Changes tokenized words to their corresponding ids in vocabulary
 #
 # input: list (tweets) - List of tweets
@@ -178,6 +180,7 @@ def word2id(tweets, vocab):
     return batch_tweet_ids
 
 
+#################################################################################
 # Prepares batch data, also adds padding to tweets
 #
 # input: list (tweets)  - List of tweets corresponding to the authors in:
@@ -217,3 +220,41 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 		batch_input.append(padded_tweet)
 
 	return batch_input, batch_output_temp, batch_sequencelen
+
+
+#################################################################################
+# Shuffles the data and partites it into 3 part training, validation, test
+#
+# input: list (tweets)  - List of tweets corresponding to the authors in:
+#	     list (users)   - Owner of the tweets
+#	     list (seq_len) - Sequence length for tweets
+#
+# output: output_format : usagetype_datatype
+#         list ("usagetype"_tweets)       - Group of tweets partitioned according to the FLAGS."usagetype"_set_size
+# 	      list ("usagetype"_users)        - Group of users partitioned according to the FLAGS."usagetype"_set_size
+#	      list ("usagetype"_seqlengths)   - Group of seqlengths partitioned according to the FLAGS."usagetype"_set_size
+def partite_dataset(tweets, users, seq_lengths):
+
+    c = list(zip(tweets, users, seq_lengths))
+    random.shuffle(c)
+    tweets, users, seq_lengths = zip(*c)
+    del c
+
+    training_set_size = int(len(tweets) * FLAGS.training_set_size)
+    valid_set_size = (len(tweets) - training_set_size) // 2 + training_set_size
+
+    training_tweets = tweets[:training_set_size]
+    valid_tweets = tweets[training_set_size:valid_set_size]
+    test_tweets = tweets[valid_set_size:]
+
+    training_users = users[:training_set_size]
+    valid_users = users[training_set_size:valid_set_size]
+    test_users = users[valid_set_size:]
+
+    training_seq_lengths = seq_lengths[:training_set_size]
+    valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
+    test_seq_lengths = seq_lengths[valid_set_size:]
+
+
+
+    return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths
