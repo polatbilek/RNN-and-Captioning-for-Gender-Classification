@@ -5,10 +5,17 @@ class network(object):
 
 	def __init__(self):
 		self.prediction = []
-		self.X = tf.placeholder(tf.int32, [None, None])
+
+		#RNN placeholders
+		self.X = tf.placeholder(tf.int32, [FLAGS.batch_size, None])
 		self.Y = tf.placeholder(tf.float64, [FLAGS.batch_size, FLAGS.num_classes])
 		self.sequence_length = tf.placeholder(tf.int32, [FLAGS.batch_size])
 		self.reg_param = tf.placeholder(tf.float32, shape=[])
+
+		#CNN placeholders
+		self.input_x = tf.placeholder(tf.int32, [None, sequence_length], name="input_x")
+		self.input_y = tf.placeholder(tf.float32, [None, num_classes], name="input_y")
+
 
 
 	def rnn(self):
@@ -18,11 +25,6 @@ class network(object):
 		pass
 
 	def cnn(self, sequence_length, num_classes, vocab_size, embedding_size, filter_sizes, num_filters):
-
-		# Placeholders for input, output and dropout
-		# None for batch_size
-		self.input_x = tf.placeholder(tf.int32, [None, sequence_length], name="input_x")
-		self.input_y = tf.placeholder(tf.float32, [None, num_classes], name="input_y")
 
 		# Embedding layer
 		with tf.name_scope("embedding"):
