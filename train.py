@@ -13,7 +13,6 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
         sess.run(init)
         
 
-
         for epoch in range(FLAGS.num_epochs):
 
             epoch_loss = 0.0
