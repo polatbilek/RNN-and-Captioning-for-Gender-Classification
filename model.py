@@ -3,28 +3,157 @@ from parameters import FLAGS
 
 class network(object):
 
-	def __init__(self):
-		self.prediction = []
 
-		#RNN placeholders
-		self.X = tf.placeholder(tf.int32, [FLAGS.batch_size, None])
-		self.Y = tf.placeholder(tf.float64, [FLAGS.batch_size, FLAGS.num_classes])
-		self.sequence_length = tf.placeholder(tf.int32, [FLAGS.batch_size])
-		self.reg_param = tf.placeholder(tf.float32, shape=[])
+
+
+    ############################################################################################################################
+    def __init__(self, embeddings):
+        self.prediction = []
+
+        #create word embeddings
+        self.tf_embeddings = tf.Variable(tf.constant(0.0, shape=[embeddings.shape[0], embeddings.shape[1]]), trainable=False, name="tf_embeddings")
+        self.embedding_placeholder = tf.placeholder(tf.float32, [embeddings.shape[0], embeddings.shape[1]])
+        self.embedding_init = self.tf_embeddings.assign(self.embedding_placeholder) #initialize this once when the session begins with sess.run
+
+
+        #create GRU cells
+        with tf.variable_scope("tweet"):
+            self.cell_fw = tf.nn.rnn_cell.GRUCell(num_units=FLAGS.rnn_cell_size, activation = tf.sigmoid)
+            self.cell_bw = tf.nn.rnn_cell.GRUCell(num_units=FLAGS.rnn_cell_size, activation = tf.sigmoid)
+
+
+        #RNN placeholders
+        self.X = tf.placeholder(tf.int32, [FLAGS.batch_size, None])
+        self.Y = tf.placeholder(tf.float64, [FLAGS.batch_size, FLAGS.num_classes])
+        self.sequence_length = tf.placeholder(tf.int32, [FLAGS.batch_size])
+        self.reg_param = tf.placeholder(tf.float32, shape=[])
+
+
+        #weigths
+        self.weights = {'fc1' : tf.Variable(tf.random_normal([2*FLAGS.rnn_cell_size, FLAGS.num_classes]), name="fc1-weights"),
+                        'att1-w' : tf.Variable(tf.random_normal([2*FLAGS.rnn_cell_size, 2*FLAGS.rnn_cell_size]), name="att1-weights"),
+                        'att1-v' : tf.Variable(tf.random_normal([2*FLAGS.rnn_cell_size]), name="att1-vector")}
+
+        #biases
+        self.bias = {'fc1' : tf.Variable(tf.random_normal([FLAGS.num_classes]), name="fc1-bias-noreg"),
+                     'att1-w' : tf.Variable(tf.random_normal([2*FLAGS.rnn_cell_size]), name="att1-bias-noreg")}
+
+
+        #initialize the computation graph for the neural network
+        self.rnn()
+        self.rnn_with_attention()
+        self.architecture()
+        self.backward_pass()
+
+
+
+
+
+
+    ############################################################################################################################
+    def architecture(self):
+
+        #FC layer for reducing the dimension to 2(# of classes)
+        self.logits = tf.matmul(self.attention_output, self.weights["fc1"]) + self.bias["fc1"]
+
+        #predictions
+        self.prediction = tf.nn.softmax(self.logits)    
+
+        #calculate accuracy
+        self.correct_pred = tf.equal(tf.argmax(self.prediction, 1), tf.argmax(self.Y, 1))
+        self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32))
+     
+
+        return self.prediction
+
+
+
+
+
+
+    ############################################################################################################################    
+    def backward_pass(self):
+
+        #calculate loss
+        self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.logits, labels=self.Y))
+
+        # add L2 regularization
+        self.l2 = self.reg_param * sum(
+                                tf.nn.l2_loss(tf_var)
+                                for tf_var in tf.trainable_variables()
+                                if not ("noreg" in tf_var.name or "bias" in tf_var.name)
+                                )
+        self.loss += self.l2
+
+        #optimizer
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
+        self.train = self.optimizer.minimize(self.loss)
+
+
+        return self.accuracy, self.loss, self.train
+
+
+
+
+
+    ############################################################################################################################
+    def rnn(self):
+
+        #embedding layer
+        self.rnn_input = tf.nn.embedding_lookup(self.tf_embeddings, self.X)
+
+        #rnn layer
+        (self.outputs, self.output_states)  = tf.nn.bidirectional_dynamic_rnn(self.cell_fw, self.cell_bw, self.rnn_input, self.sequence_length, dtype=tf.float32, scope="tweet")
+
+        #concatenate the backward and forward cells
+        self.rnn_output = tf.concat([self.output_states[0],self.output_states[1]], 1)
+
+        return self.rnn_output
+
+
+
+
+    ############################################################################################################################
+    def rnn_with_attention(self):
+
+        #embedding layer
+        self.rnn_input = tf.nn.embedding_lookup(self.tf_embeddings, self.X)
+
+        #rnn layer
+        (self.outputs, self.output_states)  = tf.nn.bidirectional_dynamic_rnn(self.cell_fw, self.cell_bw, self.rnn_input, self.sequence_length, dtype=tf.float32, scope="tweet")
+
+        #concatenate the backward and forward cells
+        self.concat_outputs = tf.concat(self.outputs, 2)
+
+        #attention layer
+        self.att_context_vector = tf.tanh( tf.tensordot(self.concat_outputs, self.weights["att1-w"], axes=1) + self.bias["att1-w"])
+        self.attentions = tf.nn.softmax(tf.tensordot(self.att_context_vector, self.weights["att1-v"], axes=1))
+        self.attention_output = tf.reduce_sum(self.concat_outputs * tf.expand_dims(self.attentions, -1), 1)
+
+        return self.attention_output
+
+
+
+
+
+
+    ############################################################################################################################
+    def captioning(self):
+        pass
+
+
+
+
+
+
+
+
+    ############################################################################################################################
+	def cnn(self, sequence_length, num_classes, vocab_size, embedding_size, filter_sizes, num_filters):
 
 		#CNN placeholders
 		self.input_x = tf.placeholder(tf.int32, [None, sequence_length], name="input_x")
 		self.input_y = tf.placeholder(tf.float32, [None, num_classes], name="input_y")
-
-
-
-	def rnn(self):
-		pass
-
-	def captioning(self):
-		pass
-
-	def cnn(self, sequence_length, num_classes, vocab_size, embedding_size, filter_sizes, num_filters):
 
 		# Embedding layer
 		with tf.name_scope("embedding"):

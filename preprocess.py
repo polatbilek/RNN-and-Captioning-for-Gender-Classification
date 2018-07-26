@@ -7,7 +7,10 @@ import os
 import sys
 import random
 
-#################################################################################
+
+
+
+#########################################################################################################################
 # Read GloVe embeddings
 #
 # input: String (path)        - Path of embeddings to read
@@ -54,7 +57,10 @@ def readGloveEmbeddings(path, embedding_size):
     return vocabulary, embeddings
 
 
-#################################################################################
+
+
+
+#########################################################################################################################
 # Reads training dataset
 # one-hot vectors: female = [0,1]
 #		           male   = [1,0]
@@ -76,7 +82,7 @@ def readData(path):
 
 
         if name.endswith(".txt"):
-            text = open(path + "/" + name, 'r', encoding="ANSI")
+            text = open(path + "/" + name, 'r')
 
             # each line = each author
             for line in text:
@@ -94,7 +100,7 @@ def readData(path):
             author_id = os.path.splitext(base)[0]
 
             # parse tweets
-            xmlFile = open(path + "/" + name, "r", encoding="ANSI")
+            xmlFile = open(path + "/" + name, "r")
             rootTag = xmlParser.parse(xmlFile).getroot()
 
             # for each tweet
@@ -110,7 +116,10 @@ def readData(path):
     return tweets, users, target_values, seq_lengths
 
 
-#################################################################################
+
+
+
+#########################################################################################################################
 # Prepares test data
 #
 # input: List (tweets)  - List of tweets of a user, each tweet has words as list
@@ -141,7 +150,11 @@ def prepTestData(tweets, user, target):
     return test_input, test_output
 
 
-#################################################################################
+
+
+
+
+#########################################################################################################################
 # Returns the one-hot gender vectors of users in correct order (index matching)
 #
 # input: list (users)   - List of usernames
@@ -155,7 +168,11 @@ def user2target(users, targets):
     return target_values
 
 
-#################################################################################
+
+
+
+
+#########################################################################################################################
 # Changes tokenized words to their corresponding ids in vocabulary
 #
 # input: list (tweets) - List of tweets
@@ -180,7 +197,10 @@ def word2id(tweets, vocab):
     return batch_tweet_ids
 
 
-#################################################################################
+
+
+
+#########################################################################################################################
 # Prepares batch data, also adds padding to tweets
 #
 # input: list (tweets)  - List of tweets corresponding to the authors in:
@@ -222,7 +242,12 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 	return batch_input, batch_output_temp, batch_sequencelen
 
 
-#################################################################################
+
+
+
+
+
+#########################################################################################################################
 # Shuffles the data and partites it into 3 part training, validation, test
 #
 # input: list (tweets)  - List of tweets corresponding to the authors in:
@@ -241,7 +266,7 @@ def partite_dataset(tweets, users, seq_lengths):
     del c
 
     training_set_size = int(len(tweets) * FLAGS.training_set_size)
-    valid_set_size = (len(tweets) - training_set_size) // 2 + training_set_size
+    valid_set_size = int(len(tweets) * FLAGS.validation_set_size) + training_set_size
 
     training_tweets = tweets[:training_set_size]
     valid_tweets = tweets[training_set_size:valid_set_size]
@@ -255,6 +280,12 @@ def partite_dataset(tweets, users, seq_lengths):
     valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
     test_seq_lengths = seq_lengths[valid_set_size:]
 
-
+    print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
 
     return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths
+
+
+
+
+
+

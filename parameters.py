@@ -8,8 +8,8 @@ class flags(object):
         self.training_set_size = 0.8
 
 		#input file paths
-		self.word_embed_path = "/media/darg1/Data/dataset/glove.twitter.27B/glove.twitter.27B.200d.txt"#change word embedding size too
-		self.training_data_path = "/media/darg1/Data/dataset/PAN2018/author-profiling/pan18-author-profiling-training-2018-02-27"
+        self.word_embed_path = "/media/darg1/Data/dataset/glove/glove.twitter.27B/glove.twitter.27B.200d.txt" #change word embedding size too
+        self.training_data_path = "/media/darg1/Data/dataset/PAN2018/author-profiling/pan18-author-profiling-training-2018-02-27"
         #self.word_embed_path = "C:\\Users\\polat\\Desktop\\PAN_files\\glove.twitter.27B.50d.txt"
         #self.training_data_path = "C:\\Users\\polat\\Desktop\\PAN_files\\PAN_data_sets\\pan18-author-profiling-training-2018-02-27"
 
@@ -19,21 +19,22 @@ class flags(object):
 
 		#optimization parameters
         self.lang = "en"
-		self.l_rate = [0.001]
-		self.reg_param = [0.00001]
+        self.l_rate = [0.001]
+        self.reg_param = [0.00001]
 		
 
 
 
 		#########################################################################################################################
         # Model Hyperparameters
-		self.l2_reg_lambda = 0.00001
-		self.learning_rate = 0.001
+        self.l2_reg_lambda = 0.00001
+        self.learning_rate = 0.001
         self.num_classes = 2
 			#CNN
         self.num_filters = 75
 			#RNN
         self.word_embedding_size = 200
+        self.rnn_cell_size = 50
 
 
 
@@ -41,7 +42,7 @@ class flags(object):
 
 		##########################################################################################################################
         # Training parameters
-        self.batch_size = 10
+        self.batch_size = 100
         self.num_epochs = 20
         self.evaluate_every = 25
 
