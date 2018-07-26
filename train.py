@@ -46,7 +46,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
                 #print the accuracy and progress of the training
                 if batch % FLAGS.evaluate_every == 0 and batch != 0:
                     batch_accuracy /= num_batches
-                    print("Epoch " +"{:2d}".format(epoch)+ " , Batch " +"{0:6d}".format(batch)+ "/" +str(batch_count)+ " , loss= " +"{0:5.4f}".format(batch_loss)+ 
+                    print("Epoch " +"{:2d}".format(epoch)+ " , Batch " +"{0:5d}".format(batch)+ "/" +str(batch_count)+ " , loss= " +"{0:5.4f}".format(batch_loss)+ 
                         " , accuracy= " + "{0:0.5f}".format(batch_accuracy) + " , progress= " +"{0:2.2f}".format((float(batch) / batch_count) * 100) + "%")
                     batch_loss = 0.0
                     batch_accuracy = 0.0
