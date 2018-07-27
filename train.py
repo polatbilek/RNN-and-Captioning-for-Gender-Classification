@@ -4,13 +4,13 @@ from preprocess import *
 
 def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings):
 
-
     with tf.Session() as sess:
 
         # init variables
         init = tf.global_variables_initializer()
-        sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
         sess.run(init)
+        sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
+        
         
 
         for epoch in range(FLAGS.num_epochs):
@@ -30,11 +30,11 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
                 #prepare the batch
                 training_batch_x, training_batch_y, training_batch_seqlen = prepWordBatchData(training_tweets, training_users, target_values, training_seq_lengths, batch)
                 training_batch_x = word2id(training_batch_x, vocabulary)
-
+                
                 #run the graph
                 feed_dict = {network.X: training_batch_x, network.Y: training_batch_y, network.sequence_length: training_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
                 _, loss, prediction, accuracy = sess.run([network.train, network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
-                
+
                 #calculate the metrics
                 batch_loss += loss
                 epoch_loss += loss

@@ -40,7 +40,7 @@ class network(object):
 
 
         #initialize the computation graph for the neural network
-        self.rnn()
+        #self.rnn()
         self.rnn_with_attention()
         self.architecture()
         self.backward_pass()
