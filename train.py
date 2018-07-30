@@ -78,7 +78,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
                 
                 #run the graph
                 feed_dict = {network.X: valid_batch_x, network.Y: valid_batch_y, network.sequence_length: valid_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
-                _, loss, prediction, accuracy = sess.run([network.train, network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
+                loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
                 
                 #for i in range(len(training_batch_y)):
                     #print(str(prediction[i]) + "---" + str(training_batch_y[i]))
