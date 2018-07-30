@@ -19,7 +19,7 @@ class flags(object):
         self.log_path = "/home/darg1/Desktop/logs"
 
 		#optimization parameters
-        self.lang = "ar"
+        self.lang = "es"
         self.model_save_threshold = 0.99
         self.l_rate = [0.001]
         self.reg_param = [0.00001]

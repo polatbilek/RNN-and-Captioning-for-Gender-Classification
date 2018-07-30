@@ -4,7 +4,8 @@ from preprocess import *
 
 def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings):
 
-    saver = tf.train.saver()
+    saver = tf.train.Saver()
+    tf.reset_default_graph()
 
     with tf.Session() as sess:
 
@@ -15,7 +16,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
         
 
         #load the model from checkpoint file if it is required
-        if self.use_trained_model == True:
+        if FLAGS.use_pretrained_model == True:
             load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
             saver.restore(sess, load_as)
             print("Loading the pretrained model from: " + str(load_as))
