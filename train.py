@@ -5,7 +5,8 @@ from preprocess import *
 def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings):
 
     saver = tf.train.Saver()
-    tf.reset_default_graph()
+    count=0
+    acc=0
 
     with tf.Session() as sess:
 
@@ -24,7 +25,8 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
   
         #for each epoch
         for epoch in range(FLAGS.num_epochs):
-
+            acc=0
+            count=0
             epoch_loss = 0.0
             epoch_accuracy = 0.0
             num_batches = 0.0            
@@ -62,7 +64,12 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
                     num_batches = 0.0
 
 
-            #VALIDATION
+
+            #VALIDATION            
+            num_batches = 0
+            batch_accuracy = 0.0
+            batch_loss = 0.0
+
             for batch in range(valid_batch_count):
 
                 #prepare the batch

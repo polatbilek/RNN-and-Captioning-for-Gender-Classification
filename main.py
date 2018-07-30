@@ -19,17 +19,19 @@ if __name__ == "__main__":
 
     print("\tconstructing datasets and network...")
     training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths = partite_dataset(tweets, users,  seq_lengths)
-    net = network(embeddings)
+
 
 	#hyperparameter optimization
     for learning_rate in FLAGS.l_rate:
         for regularization_param in FLAGS.reg_param:
+            tf.reset_default_graph()
+            net = network(embeddings)
             FLAGS.learning_rate = learning_rate
             FLAGS.l2_reg_lambda = regularization_param
 
             print("---TRAINING STARTED---")
             print("with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) 
-                    + "\n\t\t, cell size:" + str(FLAGS.rnn_cell_size) + ", embedding size:" + "FLAGS.word_embedding_size")
+                    + ", cell size:" + str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size))
             train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
 
 

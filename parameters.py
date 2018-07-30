@@ -15,11 +15,11 @@ class flags(object):
 
 		#output file paths
         self.model_path = "/home/darg1/Desktop/model/author_profiling_rnn"
-        self.model_name = "rnn_en.ckpt"
+        self.model_name = "en-model-0.001-1e-05-0.ckpt"
         self.log_path = "/home/darg1/Desktop/logs"
 
 		#optimization parameters
-        self.lang = "es"
+        self.lang = "en"
         self.model_save_threshold = 0.99
         self.l_rate = [0.001]
         self.reg_param = [0.00001]
