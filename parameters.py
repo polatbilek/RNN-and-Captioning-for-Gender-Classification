@@ -15,10 +15,12 @@ class flags(object):
 
 		#output file paths
         self.model_path = "/home/darg1/Desktop/model/author_profiling_rnn"
+        self.model_name = "rnn_en.ckpt"
         self.log_path = "/home/darg1/Desktop/logs"
 
 		#optimization parameters
-        self.lang = "en"
+        self.lang = "ar"
+        self.model_save_threshold = 0.99
         self.l_rate = [0.001]
         self.reg_param = [0.00001]
 		
@@ -42,6 +44,7 @@ class flags(object):
 
 		##########################################################################################################################
         # Training parameters
+        self.use_pretrained_model = False
         self.batch_size = 100
         self.num_epochs = 20
         self.evaluate_every = 25

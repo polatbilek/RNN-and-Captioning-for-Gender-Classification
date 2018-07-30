@@ -4,6 +4,8 @@ from preprocess import *
 
 def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings):
 
+    saver = tf.train.saver()
+
     with tf.Session() as sess:
 
         # init variables
@@ -11,8 +13,15 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
         sess.run(init)
         sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
         
-        
 
+        #load the model from checkpoint file if it is required
+        if self.use_trained_model == True:
+            load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
+            saver.restore(sess, load_as)
+            print("Loading the pretrained model from: " + str(load_as))
+
+  
+        #for each epoch
         for epoch in range(FLAGS.num_epochs):
 
             epoch_loss = 0.0
@@ -71,13 +80,23 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
                 batch_accuracy += accuracy
                 num_batches += 1
 
-            #print the accuracy and progress of the training
+            #print the accuracy and progress of the validation
             batch_accuracy /= num_batches
             epoch_accuracy /= training_batch_count
             print("Epoch " + str(epoch) + " training loss: " + "{0:5.4f}".format(epoch_loss))
             print("Epoch " + str(epoch) + " training accuracy: " + "{0:0.5f}".format(epoch_accuracy))
             print("Epoch " + str(epoch) + " validation loss: " + "{0:5.4f}".format(batch_loss))
             print("Epoch " + str(epoch) + " valdiation accuracy: " + "{0:0.5f}".format(batch_accuracy))
+
+
+            #save the model if it performs above the threshold
+            #naming convention for the model : {"language"}-model-{"learning rate"}-{"reg. param."}-{"epoch number"}
+            if batch_accuracy >= FLAGS.model_save_threshold:
+                model_name = str(FLAGS.lang) + "-model-" + str(FLAGS.learning_rate) + "-" + str(FLAGS.l2_reg_lambda) + "-" + str(epoch) + ".ckpt"
+                save_as = os.path.join(FLAGS.model_path, model_name)
+                save_path = saver.save(sess, save_as)
+                print("Model saved in path: %s" % save_path)
+
 
 
 

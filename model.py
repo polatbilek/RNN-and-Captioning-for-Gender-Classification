@@ -40,8 +40,8 @@ class network(object):
 
 
         #initialize the computation graph for the neural network
-        self.rnn()
-        #self.rnn_with_attention()
+        #self.rnn()
+        self.rnn_with_attention()
         self.architecture()
         self.backward_pass()
 
@@ -54,7 +54,7 @@ class network(object):
     def architecture(self):
 
         #FC layer for reducing the dimension to 2(# of classes)
-        self.logits = tf.matmul(self.rnn_output, self.weights["fc1"]) + self.bias["fc1"]
+        self.logits = tf.matmul(self.attention_output, self.weights["fc1"]) + self.bias["fc1"]
 
         #predictions
         self.prediction = tf.nn.softmax(self.logits)    
