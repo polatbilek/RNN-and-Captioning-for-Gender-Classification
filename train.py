@@ -25,6 +25,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
   
         #for each epoch
         for epoch in range(FLAGS.num_epochs):
+            user_pred={}            
             acc=0
             count=0
             epoch_loss = 0.0
@@ -88,6 +89,16 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
                 batch_accuracy += accuracy
                 num_batches += 1
 
+                for i in range(len(prediction)):
+                    try:
+                        score = user_pred[valid_users[i+(batch*100)]]
+                        score[0] += prediction[i][0]
+                        score[1] += prediction[i][1]
+                        user_pred[valid_users[i+(batch*100)]] = score
+                    except:
+                        user_pred[valid_users[i+(batch*100)]] = prediction[i]
+
+
             #print the accuracy and progress of the validation
             batch_accuracy /= num_batches
             epoch_accuracy /= training_batch_count
@@ -96,6 +107,14 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
             print("Epoch " + str(epoch) + " validation loss: " + "{0:5.4f}".format(batch_loss))
             print("Epoch " + str(epoch) + " valdiation accuracy: " + "{0:0.5f}".format(batch_accuracy))
 
+            for key, value in user_pred.items():
+                count+=1
+                #print "asd"
+                #print key, value
+                if np.argmax(value) == np.argmax(target_values[key]):
+                    acc+=1
+            print("number of users: " + str(count))
+            print("user level accuracy:" + str(float(acc)/count))
 
             #save the model if it performs above the threshold
             #naming convention for the model : {"language"}-model-{"learning rate"}-{"reg. param."}-{"epoch number"}

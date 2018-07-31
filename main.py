@@ -20,7 +20,6 @@ if __name__ == "__main__":
     print("\tconstructing datasets and network...")
     training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths = partite_dataset(tweets, users,  seq_lengths)
 
-
 	#hyperparameter optimization
     for learning_rate in FLAGS.l_rate:
         for regularization_param in FLAGS.reg_param:
