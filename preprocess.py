@@ -8,8 +8,6 @@ import sys
 import random
 
 
-
-
 #########################################################################################################################
 # Read GloVe embeddings
 #
@@ -57,9 +55,6 @@ def readGloveEmbeddings(path, embedding_size):
     return vocabulary, embeddings
 
 
-
-
-
 #########################################################################################################################
 # Reads training dataset
 # one-hot vectors: female = [0,1]
@@ -77,46 +72,34 @@ def readData(path):
     target_values = {}
     seq_lengths = []
 
-    # for each author
-    for name in os.listdir(path):
+    text = open(path + "/" + "truth.txt", 'r')
 
+    # each line = each author
+    for line in text:
+        words = line.strip().split(':::')
+        if words[1] == "female":
+            target_values[words[0]] = [0, 1]
+        elif words[1] == "male":
+            target_values[words[0]] = [1, 0]
 
-        if name.endswith(".txt"):
-            text = open(path + "/" + name, 'r')
+    targets = list(target_values.keys())
+    np.random.shuffle(targets)
 
-            # each line = each author
-            for line in text:
-                words = line.strip().split(':::')
-                if words[1] == "female":
-                    target_values[words[0]] = [0, 1]
-                elif words[1] == "male":
-                    target_values[words[0]] = [1, 0]
+    for user in targets:
+        xmlFile = open(path + "/" + user + ".xml", "r", encoding="utf-8")
+        rootTag = xmlParser.parse(xmlFile).getroot()
 
-        # tweets are here
-        if name.endswith(".xml"):
-
-            # get author name from file name
-            base = os.path.basename(name)
-            author_id = os.path.splitext(base)[0]
-
-            # parse tweets
-            xmlFile = open(path + "/" + name, "r")
-            rootTag = xmlParser.parse(xmlFile).getroot()
-
-            # for each tweet
-            for documents in rootTag:
-                for document in documents.findall("document"):
-                    words = tokenizer.tokenize(document.text)
-                    training_set.append([author_id, words])  # author-tweet pairs
-                    seq_lengths.append(len(words))  # length of tweets will be fed to rnn as timestep size
+        # for each tweet
+        for documents in rootTag:
+            for document in documents.findall("document"):
+                words = tokenizer.tokenize(document.text)
+                training_set.append([user, words])  # author-tweet pairs
+                seq_lengths.append(len(words))  # length of tweets will be fed to rnn as timestep size
 
     tweets = [row[1] for row in training_set]
     users = [row[0] for row in training_set]
 
     return tweets, users, target_values, seq_lengths
-
-
-
 
 
 #########################################################################################################################
@@ -150,10 +133,6 @@ def prepTestData(tweets, user, target):
     return test_input, test_output
 
 
-
-
-
-
 #########################################################################################################################
 # Returns the one-hot gender vectors of users in correct order (index matching)
 #
@@ -166,10 +145,6 @@ def user2target(users, targets):
     for user in users:
         target_values.append(targets[user])
     return target_values
-
-
-
-
 
 
 #########################################################################################################################
@@ -197,9 +172,6 @@ def word2id(tweets, vocab):
     return batch_tweet_ids
 
 
-
-
-
 #########################################################################################################################
 # Prepares batch data, also adds padding to tweets
 #
@@ -213,38 +185,44 @@ def word2id(tweets, vocab):
 # 	      list (batch_output)      - Target values to be fed to the rnn
 #	      list (batch_sequencelen) - Number of words in each tweet(gives us the # of time unrolls)
 def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
-	start = iter_no * FLAGS.batch_size
-	end = iter_no * FLAGS.batch_size + FLAGS.batch_size
-	if end > len(tweets):
-		end = len(tweets)
+    start = iter_no * FLAGS.batch_size
+    end = iter_no * FLAGS.batch_size + FLAGS.batch_size
 
-	batch_tweets = tweets[start:end]
-	batch_users = users[start:end]
-	batch_sequencelen = seq_len[start:end]
+    if end > len(tweets):
+        end = len(tweets)
 
-	batch_output_temp = user2target(batch_users, targets)
+    batch_tweets = tweets[start:end]
+    batch_users = users[start:end]
+    batch_sequencelen = seq_len[start:end]
 
-	# prepare input by adding padding
-	tweet_lengths = [len(tweet) for tweet in batch_tweets]
-	max_tweet_length = max(tweet_lengths)
+    batch_output_temp = user2target(batch_users, targets)
 
-	batch_input = []
-	for i in range(FLAGS.batch_size):
-		tweet = batch_tweets[i]
-		padded_tweet = []
-		for j in range(max_tweet_length):
-			if len(tweet) > j:
-				padded_tweet.append(tweet[j])
-			else:
-				padded_tweet.append("PAD")
-		batch_input.append(padded_tweet)
+    # prepare input by adding padding
+    tweet_lengths = [len(tweet) for tweet in batch_tweets]
+    max_tweet_length = max(tweet_lengths)
 
-	return batch_input, batch_output_temp, batch_sequencelen
-
+    batch_input = []
+    for i in range(FLAGS.batch_size):
+        tweet = batch_tweets[i]
+        padded_tweet = []
+        for j in range(max_tweet_length):
+            if len(tweet) > j:
+                padded_tweet.append(tweet[j])
+            else:
+                padded_tweet.append("PAD")
+        batch_input.append(padded_tweet)
 
 
+    c = list(zip(batch_input, batch_output_temp, batch_sequencelen))
+    random.shuffle(c)
+    tweet_batch, targets_batch, seqlens_batch = zip(*c)
 
+    print(tweet_batch[0])
+    print(targets_batch[0])
+    print(seqlens_batch[0])
+    print(batch_users[0])
 
+    return tweet_batch, targets_batch, seqlens_batch
 
 
 #########################################################################################################################
@@ -259,11 +237,6 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 # 	      list ("usagetype"_users)        - Group of users partitioned according to the FLAGS."usagetype"_set_size
 #	      list ("usagetype"_seqlengths)   - Group of seqlengths partitioned according to the FLAGS."usagetype"_set_size
 def partite_dataset(tweets, users, seq_lengths):
-
-    c = list(zip(tweets, users, seq_lengths))
-    random.shuffle(c)
-    tweets, users, seq_lengths = zip(*c)
-    del c
 
     training_set_size = int(len(tweets) * FLAGS.training_set_size)
     valid_set_size = int(len(tweets) * FLAGS.validation_set_size) + training_set_size
@@ -280,12 +253,7 @@ def partite_dataset(tweets, users, seq_lengths):
     valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
     test_seq_lengths = seq_lengths[valid_set_size:]
 
-    print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
+    print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(
+        len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
 
     return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths
-
-
-
-
-
-
