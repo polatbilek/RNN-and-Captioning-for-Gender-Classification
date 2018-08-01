@@ -66,13 +66,14 @@ def readGloveEmbeddings(path, embedding_size):
 #	      dict ("target_values") = Author(key) - ground-truth(value) pairs
 #	      list ("seq-lengths")   = Lenght of each tweet in the list "training_set"
 def readData(path):
-    path = path + "/" + FLAGS.lang + "/text"
+    path = os.path.join(os.path.join(path,FLAGS.lang),"text")
     tokenizer = TweetTokenizer()
     training_set = []
     target_values = {}
     seq_lengths = []
 
-    text = open(path + "/" + "truth.txt", 'r')
+    truth_file_name = os.path.join(path,"truth.txt")
+    text = open(truth_file_name, 'r')
 
     # each line = each author
     for line in text:
@@ -86,7 +87,8 @@ def readData(path):
     np.random.shuffle(targets)
 
     for user in targets:
-        xmlFile = open(path + "/" + user + ".xml", "r", encoding="utf-8")
+        xml_file_name = os.path.join(path,user)
+        xmlFile = open(xml_file_name + ".xml", "r", encoding="utf-8")
         rootTag = xmlParser.parse(xmlFile).getroot()
 
         # for each tweet
