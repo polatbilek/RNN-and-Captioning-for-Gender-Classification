@@ -88,7 +88,11 @@ def readData(path):
 
     for user in targets:
         xml_file_name = os.path.join(path,user)
-        xmlFile = open(xml_file_name + ".xml", "r", encoding="utf-8")
+        if sys.version_info[0] < 3:
+            xmlFile = open(xml_file_name + ".xml", "r")
+        else:
+            xmlFile = open(xml_file_name + ".xml", "r", encoding="utf-8")
+
         rootTag = xmlParser.parse(xmlFile).getroot()
 
         # for each tweet
@@ -218,11 +222,6 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
     c = list(zip(batch_input, batch_output_temp, batch_sequencelen))
     random.shuffle(c)
     tweet_batch, targets_batch, seqlens_batch = zip(*c)
-
-    print(tweet_batch[0])
-    print(targets_batch[0])
-    print(seqlens_batch[0])
-    print(batch_users[0])
 
     return tweet_batch, targets_batch, seqlens_batch
 
