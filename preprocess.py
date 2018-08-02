@@ -8,6 +8,9 @@ import sys
 import random
 
 
+
+
+
 #########################################################################################################################
 # Read GloVe embeddings
 #
@@ -53,6 +56,9 @@ def readGloveEmbeddings(path, embedding_size):
         vocabulary[vocab[i]] = i
 
     return vocabulary, embeddings
+
+
+
 
 
 #########################################################################################################################
@@ -108,6 +114,10 @@ def readData(path):
     return tweets, users, target_values, seq_lengths
 
 
+
+
+
+
 #########################################################################################################################
 # Prepares test data
 #
@@ -139,6 +149,10 @@ def prepTestData(tweets, user, target):
     return test_input, test_output
 
 
+
+
+
+
 #########################################################################################################################
 # Returns the one-hot gender vectors of users in correct order (index matching)
 #
@@ -151,6 +165,10 @@ def user2target(users, targets):
     for user in users:
         target_values.append(targets[user])
     return target_values
+
+
+
+
 
 
 #########################################################################################################################
@@ -176,6 +194,9 @@ def word2id(tweets, vocab):
         batch_tweet_ids.append(tweet_ids)
 
     return batch_tweet_ids
+
+
+
 
 
 #########################################################################################################################
@@ -224,6 +245,10 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
     tweet_batch, targets_batch, seqlens_batch = zip(*c)
 
     return tweet_batch, targets_batch, seqlens_batch
+
+
+
+
 
 
 #########################################################################################################################
