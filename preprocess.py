@@ -179,22 +179,27 @@ def user2target(users, targets):
 #
 # output: list (batch_tweet_ids) - List of corresponding ids of words in the tweet w.r.t. vocabulary
 def word2id(tweets, vocab):
-    batch_tweet_ids = []
-    for tweet in tweets:
-        tweet_ids = []
-        for word in tweet:
-            if word != "PAD":
-                word = word.lower()
+    user_batch = []
 
-            try:
-                tweet_ids.append(vocab[word])
-            except:
-                tweet_ids.append(vocab["UNK"])
+    for i in range(FLAGS.batch_size): #loop of users
+        batch_tweet_ids = []
 
-        batch_tweet_ids.append(tweet_ids)
+        for tweet in tweets[i]: #loop of tweets
+            tweet_ids = []
+            for word in tweet: #loop in words of tweet
+                if word != "PAD":
+                    word = word.lower()
 
-    return batch_tweet_ids
+                try:
+                    tweet_ids.append(vocab[word])
+                except:
+                    tweet_ids.append(vocab["UNK"])
 
+            batch_tweet_ids.append(tweet_ids)
+
+        user_batch.append(batch_tweet_ids)
+
+    return user_batch
 
 
 
@@ -211,7 +216,7 @@ def word2id(tweets, vocab):
 # output: list (batch_input)       - Ids of each words to be used in tf_embedding_lookup
 # 	      list (batch_output)      - Target values to be fed to the rnn
 #	      list (batch_sequencelen) - Number of words in each tweet(gives us the # of time unrolls)
-def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
+def prepWordBatchData_original(tweets, users, targets, seq_len, iter_no):
     start = iter_no * FLAGS.batch_size
     end = iter_no * FLAGS.batch_size + FLAGS.batch_size
 
@@ -248,6 +253,73 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 
 
 
+#########################################################################################################################
+# Prepares batch data, also adds padding to tweets
+#
+# input: list (tweets)  - List of tweets corresponding to the authors in:
+#	     list (users)   - Owner of the tweets
+#	     dict (targets) - Ground-truth gender vector of each owner
+#	     list (seq_len) - Sequence length for tweets
+#	     int  (iter_no) - Current # of iteration we are on
+#
+# output: list (batch_input)       - Ids of each words to be used in tf_embedding_lookup
+# 	      list (batch_output)      - Target values to be fed to the rnn
+#	      list (batch_sequencelen) - Number of words in each tweet(gives us the # of time unrolls)
+def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
+    numof_total_tweet = FLAGS.batch_size * FLAGS.tweet_per_user
+
+    start = iter_no * numof_total_tweet
+    end = iter_no * numof_total_tweet + numof_total_tweet
+
+    if end > len(tweets):
+        end = len(tweets)
+
+    batch_tweets = tweets[start:end]
+    batch_users = users[start:end]
+    batch_sequencelen = seq_len[start:end]
+
+    batch_targets = user2target(batch_users, targets)
+
+    # prepare input by adding padding
+    tweet_lengths = [len(tweet) for tweet in batch_tweets]
+    max_tweet_length = max(tweet_lengths)
+
+    batch_input = []
+    for i in range(numof_total_tweet):
+        tweet = batch_tweets[i]
+        padded_tweet = []
+        for j in range(max_tweet_length):
+            if len(tweet) > j:
+                padded_tweet.append(tweet[j])
+            else:
+                padded_tweet.append("PAD")
+        batch_input.append(padded_tweet)
+
+    tweet_batches = np.reshape(np.asarray(batch_input), (FLAGS.batch_size, FLAGS.tweet_per_user, max_tweet_length)).tolist()
+    target_batches = np.reshape(np.asarray(batch_targets), (FLAGS.batch_size, FLAGS.tweet_per_user, 2)).tolist()
+    seqlen_batches = np.reshape(np.asarray(batch_sequencelen), (FLAGS.batch_size, FLAGS.tweet_per_user)).tolist()
+
+
+
+    c = list(zip(tweet_batches, target_batches, seqlen_batches))
+    random.shuffle(c)
+    tweet_batches, target_batches, seqlen_batches = zip(*c)
+
+    tweet_batches = list(tweet_batches)
+    target_batches = list(target_batches)
+    seqlen_batches = list(seqlen_batches)
+
+
+    for i in range(FLAGS.batch_size):
+        c = list(zip(tweet_batches[i], target_batches[i], seqlen_batches[i]))
+        random.shuffle(c)
+        tweet_batches[i], target_batches[i], seqlen_batches[i] = zip(*c)
+
+    tweet_batches = list(tweet_batches)
+    target_batches = list(target_batches)
+    seqlen_batches = list(seqlen_batches)
+
+    return tweet_batches, target_batches, seqlen_batches, max_tweet_length
 
 
 

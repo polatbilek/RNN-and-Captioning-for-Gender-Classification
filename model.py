@@ -1,6 +1,6 @@
 import tensorflow as tf
 from parameters import FLAGS
-
+import numpy as np
 
 class network(object):
 
@@ -21,9 +21,9 @@ class network(object):
             self.cell_bw = tf.nn.rnn_cell.GRUCell(num_units=FLAGS.rnn_cell_size, activation=tf.sigmoid)
 
         # RNN placeholders
-        self.X = tf.placeholder(tf.int32, [FLAGS.batch_size, None])
-        self.Y = tf.placeholder(tf.float64, [FLAGS.batch_size, FLAGS.num_classes])
-        self.sequence_length = tf.placeholder(tf.int32, [FLAGS.batch_size])
+        self.X = tf.placeholder(tf.int32, [FLAGS.batch_size*FLAGS.tweet_per_user, None])
+        self.Y = tf.placeholder(tf.float64, [FLAGS.batch_size*FLAGS.tweet_per_user, FLAGS.num_classes])
+        self.sequence_length = tf.placeholder(tf.int32, [FLAGS.batch_size*FLAGS.tweet_per_user])
         self.reg_param = tf.placeholder(tf.float32, shape=[])
 
         # weigths
@@ -46,7 +46,7 @@ class network(object):
     ############################################################################################################################
     def architecture(self):
         # FC layer for reducing the dimension to 2(# of classes)
-        self.logits = tf.matmul(self.attention_output, self.weights["fc1"]) + self.bias["fc1"]
+        self.logits = tf.tensordot(self.attention_output, self.weights["fc1"]) + self.bias["fc1"]
 
         # predictions
         self.prediction = tf.nn.softmax(self.logits)
@@ -89,6 +89,7 @@ class network(object):
         # concatenate the backward and forward cells
         self.rnn_output = tf.concat([self.output_states[0], self.output_states[1]], 1)
 
+
         return self.rnn_output
 
     ############################################################################################################################
@@ -103,6 +104,9 @@ class network(object):
 
         # concatenate the backward and forward cells
         self.concat_outputs = tf.concat(self.outputs, 2)
+
+        print(type(self.concat_outputs))
+        self.concat_outputs = tf.reshape(self.concat_outputs, [FLAGS.batch_size, FLAGS.tweet_per_user, None, 2*FLAGS.rnn_cell_size])
 
         # attention layer
         self.att_context_vector = tf.tanh(
