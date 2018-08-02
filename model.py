@@ -45,6 +45,7 @@ class network(object):
 
     ############################################################################################################################
     def architecture(self):
+        #TODO: below tensordot could not multiply tensor of 3 and 2, need to specify axes
         # FC layer for reducing the dimension to 2(# of classes)
         self.logits = tf.tensordot(self.attention_output, self.weights["fc1"]) + self.bias["fc1"]
 
@@ -106,6 +107,7 @@ class network(object):
         self.concat_outputs = tf.concat(self.outputs, 2)
 
         print(type(self.concat_outputs))
+        #TODO:Below instead of None we need max_tweet_length since it changes in each batch, None is not supported in reshape
         self.concat_outputs = tf.reshape(self.concat_outputs, [FLAGS.batch_size, FLAGS.tweet_per_user, None, 2*FLAGS.rnn_cell_size])
 
         # attention layer
