@@ -266,60 +266,64 @@ def prepWordBatchData_original(tweets, users, targets, seq_len, iter_no):
 # 	      list (batch_output)      - Target values to be fed to the rnn
 #	      list (batch_sequencelen) - Number of words in each tweet(gives us the # of time unrolls)
 def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
-    numof_total_tweet = FLAGS.batch_size * FLAGS.tweet_per_user
+	numof_total_tweet = FLAGS.batch_size * FLAGS.tweet_per_user
 
-    start = iter_no * numof_total_tweet
-    end = iter_no * numof_total_tweet + numof_total_tweet
+	start = iter_no * numof_total_tweet
+	end = iter_no * numof_total_tweet + numof_total_tweet
 
-    if end > len(tweets):
-        end = len(tweets)
+	if end > len(tweets):
+		end = len(tweets)
 
-    batch_tweets = tweets[start:end]
-    batch_users = users[start:end]
-    batch_sequencelen = seq_len[start:end]
+	batch_tweets = tweets[start:end]
+	batch_users = users[start:end]
+	batch_sequencelen = seq_len[start:end]
 
-    batch_targets = user2target(batch_users, targets)
+	batch_targets = user2target(batch_users, targets)
 
-    # prepare input by adding padding
-    tweet_lengths = [len(tweet) for tweet in batch_tweets]
-    max_tweet_length = max(tweet_lengths)
+	# prepare input by adding padding
+	tweet_lengths = [len(tweet) for tweet in batch_tweets]
+	max_tweet_length = max(tweet_lengths)
 
-    batch_input = []
-    for i in range(numof_total_tweet):
-        tweet = batch_tweets[i]
-        padded_tweet = []
-        for j in range(max_tweet_length):
-            if len(tweet) > j:
-                padded_tweet.append(tweet[j])
-            else:
-                padded_tweet.append("PAD")
-        batch_input.append(padded_tweet)
+	batch_input = []
+	for i in range(numof_total_tweet):
+		tweet = batch_tweets[i]
+		padded_tweet = []
+		for j in range(max_tweet_length):
+			if len(tweet) > j:
+				padded_tweet.append(tweet[j])
+			else:
+				padded_tweet.append("PAD")
+		batch_input.append(padded_tweet)
 
-    tweet_batches = np.reshape(np.asarray(batch_input), (FLAGS.batch_size, FLAGS.tweet_per_user, max_tweet_length)).tolist()
-    target_batches = np.reshape(np.asarray(batch_targets), (FLAGS.batch_size, FLAGS.tweet_per_user, 2)).tolist()
-    seqlen_batches = np.reshape(np.asarray(batch_sequencelen), (FLAGS.batch_size, FLAGS.tweet_per_user)).tolist()
+	tweet_batches = np.reshape(np.asarray(batch_input), (FLAGS.batch_size, FLAGS.tweet_per_user, max_tweet_length)).tolist()
+	target_batches = np.reshape(np.asarray(batch_targets), (FLAGS.batch_size, FLAGS.tweet_per_user, 2)).tolist()
+	seqlen_batches = np.reshape(np.asarray(batch_sequencelen), (FLAGS.batch_size, FLAGS.tweet_per_user)).tolist()
 
+	target_values = []
+	for i in range(len(target_batches)):
+		target_values.append(target_batches[i][0]) 
 
+	target_batches = np.reshape(np.asarray(target_values), (FLAGS.batch_size, 2)).tolist()
 
-    c = list(zip(tweet_batches, target_batches, seqlen_batches))
-    random.shuffle(c)
-    tweet_batches, target_batches, seqlen_batches = zip(*c)
+	#user level shuffling
+	c = list(zip(tweet_batches, target_batches, seqlen_batches))
+	random.shuffle(c)
+	tweet_batches, target_batches, seqlen_batches = zip(*c)
 
-    tweet_batches = list(tweet_batches)
-    target_batches = list(target_batches)
-    seqlen_batches = list(seqlen_batches)
+	tweet_batches = list(tweet_batches)
+	target_values = list(target_values)
+	seqlen_batches = list(seqlen_batches)
 
+	#tweet level shuffling
+	for i in range(FLAGS.batch_size):
+		c = list(zip(tweet_batches[i], seqlen_batches[i]))
+		random.shuffle(c)
+		tweet_batches[i], seqlen_batches[i] = zip(*c)
 
-    for i in range(FLAGS.batch_size):
-        c = list(zip(tweet_batches[i], target_batches[i], seqlen_batches[i]))
-        random.shuffle(c)
-        tweet_batches[i], target_batches[i], seqlen_batches[i] = zip(*c)
+	tweet_batches = list(tweet_batches)
+	seqlen_batches = list(seqlen_batches)
 
-    tweet_batches = list(tweet_batches)
-    target_batches = list(target_batches)
-    seqlen_batches = list(seqlen_batches)
-
-    return tweet_batches, target_batches, seqlen_batches, max_tweet_length
+	return tweet_batches, target_batches, seqlen_batches
 
 
 
