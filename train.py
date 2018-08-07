@@ -1,8 +1,14 @@
 from parameters import FLAGS
 import tensorflow as tf
 from preprocess import *
-import time
+import numpy as np
+from model import network
 
+
+
+###########################################################################################################################
+##trains and validates the model
+###########################################################################################################################
 def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings):
 
 	saver = tf.train.Saver()
@@ -13,7 +19,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 		init = tf.global_variables_initializer()
 		sess.run(init)
 		sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
-        
+
 
 		#load the model from checkpoint file if it is required
 		if FLAGS.use_pretrained_model == True:
@@ -42,11 +48,11 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				#Flatten everything to feed RNN
 				training_batch_x = np.reshape(training_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(training_batch_x)[2]))
 				training_batch_seqlen = np.reshape(training_batch_seqlen, (-1))
-				
+
 				#run the graph
 				feed_dict = {network.X: training_batch_x, network.Y: training_batch_y, network.sequence_length: training_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
-				_, loss, prediction, accuracy, att, we = sess.run([network.train, network.loss, network.prediction, network.accuracy, network.attentions_word,network.weights["fc1"]], feed_dict=feed_dict)
-	
+				_, loss, prediction, accuracy = sess.run([network.train, network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
+
 				#calculate the metrics
 				batch_loss += loss
 				epoch_loss += loss
@@ -58,7 +64,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				if batch % FLAGS.evaluate_every == 0 and batch != 0:
 					batch_accuracy /= num_batches
 					print("Epoch " +"{:2d}".format(epoch)+ " , Batch " +"{0:5d}".format(batch)+ "/" +str(training_batch_count)+ " , loss= " +"{0:5.4f}".format(batch_loss)+ 
-                        " , accuracy= " + "{0:0.5f}".format(batch_accuracy) + " , progress= " +"{0:2.2f}".format((float(batch) / training_batch_count) * 100) + "%")
+						" , accuracy= " + "{0:0.5f}".format(batch_accuracy) + " , progress= " +"{0:2.2f}".format((float(batch) / training_batch_count) * 100) + "%")
 					batch_loss = 0.0
 					batch_accuracy = 0.0
 					num_batches = 0.0
@@ -79,7 +85,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				#Flatten everything to feed RNN
 				valid_batch_x = np.reshape(valid_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(valid_batch_x)[2]))
 				valid_batch_seqlen = np.reshape(valid_batch_seqlen, (-1)) # to flatten list, pass [-1] as shape
-                
+
 				#run the graph
 				feed_dict = {network.X: valid_batch_x, network.Y: valid_batch_y, network.sequence_length: valid_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
 				loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
@@ -109,6 +115,38 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 
 
 
+
+
+
+####################################################################################################################
+#main function for standalone runs
+####################################################################################################################
+if __name__ == "__main__":
+
+	print("---PREPROCESSING STARTED---")
+
+	print("\treading word embeddings...")
+	vocabulary, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
+
+	print("\treading tweets...")
+	tweets, users, target_values, seq_lengths = readData(FLAGS.training_data_path)
+
+	print("\tconstructing datasets and network...")
+	training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths = partite_dataset(tweets, users, seq_lengths)
+
+
+	#hyperparameter optimization
+	for learning_rate in FLAGS.l_rate:
+		for regularization_param in FLAGS.reg_param:
+			tf.reset_default_graph()
+			net = network(embeddings)
+			FLAGS.learning_rate = learning_rate
+			FLAGS.l2_reg_lambda = regularization_param
+
+			print("---TRAINING STARTED---")
+			print("with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) 
+					+ ", cell size:" + str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size))
+			train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
 
 
 

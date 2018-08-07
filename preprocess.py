@@ -383,22 +383,22 @@ def partite_dataset_tweet(tweets, users, seq_lengths):
 	random.shuffle(c)
 	tweets, users, seq_lengths = zip(*c)
 
-    training_set_size = int(len(tweets) * FLAGS.training_set_size)
-    valid_set_size = int(len(tweets) * FLAGS.validation_set_size) + training_set_size
+	training_set_size = int(len(tweets) * FLAGS.training_set_size)
+	valid_set_size = int(len(tweets) * FLAGS.validation_set_size) + training_set_size
 
-    training_tweets = tweets[:training_set_size]
-    valid_tweets = tweets[training_set_size:valid_set_size]
-    test_tweets = tweets[valid_set_size:]
+	training_tweets = tweets[:training_set_size]
+	valid_tweets = tweets[training_set_size:valid_set_size]
+	test_tweets = tweets[valid_set_size:]
 
-    training_users = users[:training_set_size]
-    valid_users = users[training_set_size:valid_set_size]
-    test_users = users[valid_set_size:]
+	training_users = users[:training_set_size]
+	valid_users = users[training_set_size:valid_set_size]
+	test_users = users[valid_set_size:]
 
-    training_seq_lengths = seq_lengths[:training_set_size]
-    valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
-    test_seq_lengths = seq_lengths[valid_set_size:]
+	training_seq_lengths = seq_lengths[:training_set_size]
+	valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
+	test_seq_lengths = seq_lengths[valid_set_size:]
 
-    print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(
-        len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
+	print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(
+		len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
 
-    return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths
+	return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths

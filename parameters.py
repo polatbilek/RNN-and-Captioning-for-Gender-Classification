@@ -15,14 +15,14 @@ class flags(object):
 
 		#output file paths
         self.model_path = "/home/darg1/Desktop/model/author_profiling_rnn"
-        self.model_name = "en-model-0.001-1e-05-0.ckpt"
+        self.model_name = "en-model-0.001-0.0001-3.ckpt"
         self.log_path = "/home/darg1/Desktop/logs"
 
 		#optimization parameters
         self.lang = "en"
-        self.model_save_threshold = 0.99
-        self.l_rate = [0.0001]
-        self.reg_param = [0.000001]
+        self.model_save_threshold = 0.74
+        self.l_rate = [0.001]
+        self.reg_param = [0.0001]
 		
 
 
@@ -47,7 +47,7 @@ class flags(object):
         self.use_pretrained_model = False
         self.tweet_per_user = 100
         self.batch_size = 10
-        self.num_epochs = 20
+        self.num_epochs = 10
         self.evaluate_every = 5
 
 
