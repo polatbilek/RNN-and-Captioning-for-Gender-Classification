@@ -6,8 +6,6 @@ import time
 def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings):
 
 	saver = tf.train.Saver()
-	count=0
-	acc=0
 
 	with tf.Session() as sess:
 
@@ -26,8 +24,6 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
   
 		#for each epoch
 		for epoch in range(FLAGS.num_epochs):
-			acc=0
-			count=0
 			epoch_loss = 0.0
 			epoch_accuracy = 0.0
 			num_batches = 0.0            
@@ -36,8 +32,6 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 			training_batch_count = int(len(training_tweets) / (FLAGS.batch_size*FLAGS.tweet_per_user))
 			valid_batch_count = int(len(valid_tweets) / (FLAGS.batch_size*FLAGS.tweet_per_user))
 
-
-			##TODO: Use tensorflow flatten rather than numpy, it was hard to play with shapes.
 
 			#TRAINING
 			for batch in range(training_batch_count):
@@ -49,39 +43,10 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				training_batch_x = np.reshape(training_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(training_batch_x)[2]))
 				training_batch_seqlen = np.reshape(training_batch_seqlen, (-1))
 				
-
-				'''
-				#TEST--TO BE DELETED
-				print np.shape(training_batch_x)
-				print np.shape(training_batch_y)
-				print np.shape(training_batch_seqlen)
-				feed_dict = {network.X: training_batch_x, network.Y: training_batch_y, network.sequence_length: training_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
-				x, sequence_length, a_out_r, a_out, att_cv, att, att_out, we, log = sess.run([network.X, network.sequence_length, network.attention_output_raw, network.attention_output, network.att_context_vector_word,network.attentions_word,network.attention_output_word,network.weights["fc1"],network.logits], feed_dict=feed_dict)
-				print "-------------"
-				print np.shape(x)
-				print np.shape(sequence_length)
-				print np.shape(a_out_r)
-				print np.shape(a_out)
-				print "-------------"
-				print np.shape(att_cv)
-				print np.shape(att)
-				print np.shape(att_out)
-				print "-------------"
-				print np.shape(we)
-				print np.shape(log)
-				sys.exit()
-				'''
-
 				#run the graph
 				feed_dict = {network.X: training_batch_x, network.Y: training_batch_y, network.sequence_length: training_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
 				_, loss, prediction, accuracy, att, we = sess.run([network.train, network.loss, network.prediction, network.accuracy, network.attentions_word,network.weights["fc1"]], feed_dict=feed_dict)
-				'''
-				print att
-				print "---------"
-				print we
-				if batch==3:
-					sys.exit()
-				'''
+	
 				#calculate the metrics
 				batch_loss += loss
 				epoch_loss += loss

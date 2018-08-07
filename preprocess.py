@@ -295,14 +295,16 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 				padded_tweet.append("PAD")
 		batch_input.append(padded_tweet)
 
+
+	#reshape the input for shuffling operation
 	tweet_batches = np.reshape(np.asarray(batch_input), (FLAGS.batch_size, FLAGS.tweet_per_user, max_tweet_length)).tolist()
 	target_batches = np.reshape(np.asarray(batch_targets), (FLAGS.batch_size, FLAGS.tweet_per_user, 2)).tolist()
 	seqlen_batches = np.reshape(np.asarray(batch_sequencelen), (FLAGS.batch_size, FLAGS.tweet_per_user)).tolist()
 
+	#prepare the target values
 	target_values = []
 	for i in range(len(target_batches)):
 		target_values.append(target_batches[i][0]) 
-
 	target_batches = np.reshape(np.asarray(target_values), (FLAGS.batch_size, 2)).tolist()
 
 	#user level shuffling

@@ -36,6 +36,6 @@ if __name__ == "__main__":
 
 
     print("---TESTING STARTED---")
-    #test(net, test_tweets, test_users, test_seq_lengths, target_values, vocabulary)
+    #test(net, test_tweets, test_users, test_seq_lengths, target_values, vocabulary, embeddings)
 
 

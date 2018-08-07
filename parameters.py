@@ -8,7 +8,7 @@ class flags(object):
         self.training_set_size = 0.8
 
 		#input file paths
-        self.word_embed_path = "/media/darg1/Data/dataset/glove/glove.twitter.27B/glove.twitter.27B.50d.txt" #change word embedding size too
+        self.word_embed_path = "/media/darg1/Data/dataset/glove/glove.twitter.27B/glove.twitter.27B.200d.txt" #change word embedding size too
         self.training_data_path = "/media/darg1/Data/dataset/PAN2018/author-profiling/pan18-author-profiling-training-2018-02-27"
         #self.word_embed_path = "C:\\Users\\polat\\Desktop\\PAN_files\\glove\\glove.twitter.27B.50d.txt"
         #self.training_data_path = "C:\\Users\\polat\\Desktop\\PAN_files\\PAN_data_sets\\pan18-author-profiling-training-2018-02-27"
@@ -21,8 +21,8 @@ class flags(object):
 		#optimization parameters
         self.lang = "en"
         self.model_save_threshold = 0.99
-        self.l_rate = [0.001]
-        self.reg_param = [0.00001]
+        self.l_rate = [0.0001]
+        self.reg_param = [0.000001]
 		
 
 
@@ -35,7 +35,7 @@ class flags(object):
 			#CNN
         self.num_filters = 75
 			#RNN
-        self.word_embedding_size = 50
+        self.word_embedding_size = 200
         self.rnn_cell_size = 50
 
 
