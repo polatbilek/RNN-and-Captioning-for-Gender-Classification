@@ -216,7 +216,7 @@ def word2id(tweets, vocab):
 # output: list (batch_input)       - Ids of each words to be used in tf_embedding_lookup
 # 	      list (batch_output)      - Target values to be fed to the rnn
 #	      list (batch_sequencelen) - Number of words in each tweet(gives us the # of time unrolls)
-def prepWordBatchData_original(tweets, users, targets, seq_len, iter_no):
+def prepWordBatchData_tweet(tweets, users, targets, seq_len, iter_no):
     start = iter_no * FLAGS.batch_size
     end = iter_no * FLAGS.batch_size + FLAGS.batch_size
 
@@ -330,7 +330,7 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 
 
 #########################################################################################################################
-# Shuffles the data and partites it into 3 part training, validation, test
+# partites the data into 3 part training, validation, test
 #
 # input: list (tweets)  - List of tweets corresponding to the authors in:
 #	     list (users)   - Owner of the tweets
@@ -341,6 +341,47 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 # 	      list ("usagetype"_users)        - Group of users partitioned according to the FLAGS."usagetype"_set_size
 #	      list ("usagetype"_seqlengths)   - Group of seqlengths partitioned according to the FLAGS."usagetype"_set_size
 def partite_dataset(tweets, users, seq_lengths):
+
+    training_set_size = int(len(tweets) * FLAGS.training_set_size)
+    valid_set_size = int(len(tweets) * FLAGS.validation_set_size) + training_set_size
+
+    training_tweets = tweets[:training_set_size]
+    valid_tweets = tweets[training_set_size:valid_set_size]
+    test_tweets = tweets[valid_set_size:]
+
+    training_users = users[:training_set_size]
+    valid_users = users[training_set_size:valid_set_size]
+    test_users = users[valid_set_size:]
+
+    training_seq_lengths = seq_lengths[:training_set_size]
+    valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
+    test_seq_lengths = seq_lengths[valid_set_size:]
+
+    print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(
+        len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
+
+    return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths
+
+
+
+
+
+#########################################################################################################################
+# Shuffles the data and partites it into 3 part training, validation, test
+#
+# input: list (tweets)  - List of tweets corresponding to the authors in:
+#	     list (users)   - Owner of the tweets
+#	     list (seq_len) - Sequence length for tweets
+#
+# output: output_format : usagetype_datatype
+#         list ("usagetype"_tweets)       - Group of tweets partitioned according to the FLAGS."usagetype"_set_size
+# 	      list ("usagetype"_users)        - Group of users partitioned according to the FLAGS."usagetype"_set_size
+#	      list ("usagetype"_seqlengths)   - Group of seqlengths partitioned according to the FLAGS."usagetype"_set_size
+def partite_dataset_tweet(tweets, users, seq_lengths):
+
+	c = list(zip(tweets, users, seq_lengths))
+	random.shuffle(c)
+	tweets, users, seq_lengths = zip(*c)
 
     training_set_size = int(len(tweets) * FLAGS.training_set_size)
     valid_set_size = int(len(tweets) * FLAGS.validation_set_size) + training_set_size
