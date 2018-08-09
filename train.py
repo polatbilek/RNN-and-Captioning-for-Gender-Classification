@@ -27,7 +27,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 			saver.restore(sess, load_as)
 			print("Loading the pretrained model from: " + str(load_as))
 
-  
+
 		#for each epoch
 		for epoch in range(FLAGS.num_epochs):
 			epoch_loss = 0.0
@@ -101,13 +101,28 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 			print("Epoch " + str(epoch) + " training loss: " + "{0:5.4f}".format(epoch_loss))
 			print("Epoch " + str(epoch) + " training accuracy: " + "{0:0.5f}".format(epoch_accuracy))
 			print("Epoch " + str(epoch) + " validation loss: " + "{0:5.4f}".format(batch_loss))
-			print("Epoch " + str(epoch) + " valdiation accuracy: " + "{0:0.5f}".format(batch_accuracy))
+			print("Epoch " + str(epoch) + " validation accuracy: " + "{0:0.5f}".format(batch_accuracy))
+
+			if FLAGS.debug:
+				f = open(FLAGS.log_path, "a")
+
+				training_loss_line = "Epoch " + str(epoch) + " training loss: " + str(epoch_loss) + "\n"
+				training_accuracy_line = "Epoch " + str(epoch) + " training accuracy: " + str(epoch_accuracy) + "\n"
+				validation_loss_line = "Epoch " + str(epoch) + " validation loss: " + str(batch_loss) + "\n"
+				validation_accuracy_line = "Epoch " + str(epoch) + " validation accuracy: " + str(batch_accuracy) + "\n"
+
+				f.write(training_loss_line)
+				f.write(training_accuracy_line)
+				f.write(validation_loss_line)
+				f.write(validation_accuracy_line)
+
+				f.close()
 
 
 			#save the model if it performs above the threshold
 			#naming convention for the model : {"language"}-model-{"learning rate"}-{"reg. param."}-{"epoch number"}
 			if batch_accuracy >= FLAGS.model_save_threshold:
-				model_name = str(FLAGS.lang) + "-model-" + str(FLAGS.learning_rate) + "-" + str(FLAGS.l2_reg_lambda) + "-" + str(epoch) + ".ckpt"
+				model_name = str(FLAGS.lang) + "-model-" + str(FLAGS.learning_rate) + "-" + str(FLAGS.l2_reg_lambda) + "-" + str(epoch) + "-" + str(FLAGS.rnn_cell_size) + "-" + str(FLAGS.word_embedding_size) + ".ckpt"
 				save_as = os.path.join(FLAGS.model_path, model_name)
 				save_path = saver.save(sess, save_as)
 				print("Model saved in path: %s" % save_path)

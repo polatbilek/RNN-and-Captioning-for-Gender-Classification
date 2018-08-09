@@ -31,8 +31,15 @@ if __name__ == "__main__":
             FLAGS.l2_reg_lambda = regularization_param
 
             print("---TRAINING STARTED---")
-            print("with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) 
-                    + ", cell size:" + str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size))
+            model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", cell size:" + str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size) + ", language:" + FLAGS.lang
+            print(model_specs)
+
+            if FLAGS.debug:
+                f = open(FLAGS.log_path,"a")
+                f.write("---TRAINING STARTED---\n")
+                model_specs += "\n"
+                f.write(model_specs)
+                f.close()
             train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
 
 
