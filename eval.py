@@ -71,15 +71,14 @@ if __name__ == "__main__":
 	vocabulary, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
 
 	print("\treading tweets...")
-	tweets, users, target_values, seq_lengths = readData(FLAGS.training_data_path)
+	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)
 
 	print("\tconstructing datasets and network...")
-	training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths = partite_dataset(tweets, users,  seq_lengths)
 	tf.reset_default_graph()
 	net = network(embeddings)
 
 	print("---TESTING STARTED---")
-	test(net, test_tweets, test_users, test_seq_lengths, target_values, vocabulary, embeddings)
+	test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
 
 
 
