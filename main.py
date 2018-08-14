@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
 	print("\treading word embeddings...")
 	vocabulary, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
-	'''
+	
 	print("\treading tweets...")
 	tweets, users, target_values, seq_lengths = readData(FLAGS.training_data_path)
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 					f.write(model_specs)
 					f.close()
 				train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)	
-	'''
+
 
 	#testing
 	print("---TESTING STARTED---")

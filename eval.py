@@ -72,13 +72,20 @@ if __name__ == "__main__":
 
 	print("\treading tweets...")
 	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)
+	print("\ttest set size: " + str(len(tweets)))
 
-	print("\tconstructing datasets and network...")
-	tf.reset_default_graph()
-	net = network(embeddings)
-
+	#testing
 	print("---TESTING STARTED---")
-	test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
+	
+	if FLAGS.optimize == True:
+		models = os.listdir(FLAGS.model_path)
+		for model in models:
+			if model.endswith(".ckpt.index"):
+				FLAGS.model_name = model[:-6]
+				print("with model: " + FLAGS.model_name)
+				tf.reset_default_graph()
+				net = network(embeddings)
+				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
 
 
 
