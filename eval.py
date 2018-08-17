@@ -33,18 +33,18 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 		#start evaluating each batch of test data
 		batch_count = int(len(test_tweets) / (FLAGS.batch_size*FLAGS.tweet_per_user))
 
+		print("Testing...")
 		for batch in range(batch_count):
 
 			#prepare the batch
-			test_batch_x, test_batch_y, test_batch_seqlen = prepWordBatchData(test_tweets, test_users, target_values, test_seq_lengths, batch)
-			test_batch_x = word2id(test_batch_x, vocabulary)
+			test_batch_x, test_batch_y = prepCharBatchData(test_tweets, test_users, target_values, batch)
+			test_batch_x = char2id(test_batch_x, vocabulary)
 
 			#Flatten everything to feed RNN
-			test_batch_x = np.reshape(test_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(test_batch_x)[2]))
-			test_batch_seqlen = np.reshape(test_batch_seqlen, (-1)) # to flatten list, pass [-1] as shape
-		
+			test_batch_x = np.reshape(test_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, FLAGS.sequence_length))
+
 			#run the graph
-			feed_dict = {network.X: test_batch_x, network.Y: test_batch_y, network.sequence_length: test_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
+			feed_dict = {network.input_x: test_batch_x, network.input_y: test_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
 			loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
 			#calculate the metrics
