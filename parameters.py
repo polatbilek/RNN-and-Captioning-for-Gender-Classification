@@ -15,14 +15,14 @@ class flags(object):
 		#self.training_data_path = "C:\\Users\\polat\\Desktop\\PAN_files\\PAN_data_sets\\pan18-author-profiling-training-2018-02-27"
 
 		#output file paths
-		self.model_path = "/home/darg1/Desktop/model/author_profiling_rnn/cellsize=100"
+		self.model_path = "/home/darg1/Desktop/model/author_profiling_rnn/es"
 		self.model_name = "en-model-0.001-0.0001-3.ckpt"
-		self.log_path = "/home/darg1/Desktop/logs/logs_rnn.txt"
+		self.log_path = "/home/darg1/Desktop/logs/logs_rnn_es.txt"
 		#self.log_path = "C:\\Users\\polat\\Desktop\\logs_rnn.txt"
 
 		#optimization parameters
-		self.lang = "en"
-		self.model_save_threshold = 0.76
+		self.lang = "es"
+		self.model_save_threshold = 0.74
 		self.optimize = True #if true below values will be used for hyper parameter optimization, or if testing is run: all the models in model_path will be tested
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
 		self.l_rate = [0.01, 0.001, 0.0001, 0.00001]
@@ -41,7 +41,7 @@ class flags(object):
 		self.num_filters = 75
 			#RNN
 		self.word_embedding_size = 200
-		self.rnn_cell_size = 100
+		self.rnn_cell_size = 50
 
 
 

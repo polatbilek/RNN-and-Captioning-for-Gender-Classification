@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
 	print("\treading word embeddings...")
 	vocabulary, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
-	
+
 	print("\treading tweets...")
 	tweets, users, target_values, seq_lengths = readData(FLAGS.training_data_path)
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 				model_specs+=  str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size) + ", language:" + FLAGS.lang
 				print(model_specs)
 
-	            if FLAGS.optimize:
+				if FLAGS.optimize:
 					f = open(FLAGS.log_path,"a")
 					f.write("---TRAINING STARTED---\n")
 					model_specs += "\n"
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 	print("\treading tweets for test...")
 	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)
 	print("\ttest set size: " + str(len(tweets)))
-	
+
 	if FLAGS.optimize == True:
 		models = os.listdir(FLAGS.model_path)
 		for model in models:

@@ -11,7 +11,7 @@ from model import network
 ###########################################################################################################################
 def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings):
 
-	saver = tf.train.Saver()
+	saver = tf.train.Saver(max_to_keep=None)
 
 	with tf.Session() as sess:
 
