@@ -59,7 +59,6 @@ if __name__ == "__main__":
 		for model in models:
 			if model.endswith(".ckpt.index"):
 				FLAGS.model_name = model[:-6]
-				print("with model: " + FLAGS.model_name)
 				tf.reset_default_graph()
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
