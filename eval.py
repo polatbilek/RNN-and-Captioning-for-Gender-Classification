@@ -22,7 +22,6 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 		sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
 		batch_loss = 0.0
 		batch_accuracy = 0.0
-		num_batches = 0
 
 		#load the model from checkpoint file
 		load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
@@ -50,10 +49,9 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 			#calculate the metrics
 			batch_loss += loss
 			batch_accuracy += accuracy
-			num_batches += 1
 
 		#print the accuracy and progress of the validation
-		batch_accuracy /= (batch_count-1)
+		batch_accuracy /= batch_count
 		print("Test loss: " + "{0:5.4f}".format(batch_loss))
 		print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
 
@@ -82,7 +80,6 @@ if __name__ == "__main__":
 		for model in models:
 			if model.endswith(".ckpt.index"):
 				FLAGS.model_name = model[:-6]
-				print("with model: " + FLAGS.model_name)
 				tf.reset_default_graph()
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)

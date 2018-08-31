@@ -71,8 +71,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 
 
 
-			#VALIDATION            
-			num_batches = 0
+			#VALIDATION     
 			batch_accuracy = 0.0
 			batch_loss = 0.0
 
@@ -93,10 +92,9 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				#calculate the metrics
 				batch_loss += loss
 				batch_accuracy += accuracy
-				num_batches += 1
 
 			#print the accuracy and progress of the validation
-			batch_accuracy /= num_batches
+			batch_accuracy /= valid_batch_count
 			epoch_accuracy /= training_batch_count
 			print("Epoch " + str(epoch) + " training loss: " + "{0:5.4f}".format(epoch_loss))
 			print("Epoch " + str(epoch) + " training accuracy: " + "{0:0.5f}".format(epoch_accuracy))
