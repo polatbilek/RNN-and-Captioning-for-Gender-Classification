@@ -37,23 +37,23 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 			#prepare the batch
 			test_batch_x, test_batch_y, test_batch_seqlen = prepWordBatchData(test_tweets, test_users, target_values, test_seq_lengths, batch)
 			test_batch_x = word2id(test_batch_x, vocabulary)
-		
+
 			#run the graph
 			feed_dict = {network.X: test_batch_x, network.Y: test_batch_y, network.sequence_length: test_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
 			loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
-            #calculate the metrics
-            batch_loss += loss
-            batch_accuracy += accuracy
+			#calculate the metrics
+			batch_loss += loss
+			batch_accuracy += accuracy
 
-            for i in range(len(prediction)):
-            	try:
+			for i in range(len(prediction)):
+				try:
 					score = user_pred[valid_users[i+(batch*100)]]
 					score[0] += prediction[i][0]
 					score[1] += prediction[i][1]
 					user_pred[valid_users[i+(batch*100)]] = score
 				except:
- 					user_pred[valid_users[i+(batch*100)]] = prediction[i]
+					user_pred[valid_users[i+(batch*100)]] = prediction[i]
 
 
 		#print the accuracy and progress of the validation
@@ -69,12 +69,12 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 		print("user level accuracy:" + str(float(acc)/count))
 
 		if FLAGS.optimize:
-			f = open(FLAGS.log_path, "a"
-			f.write("with model:" + load_as)
+			f = open(FLAGS.log_path, "a")
+			f.write("\nwith model:" + load_as)
 			f.write("Test loss: " + "{0:5.4f}".format(batch_loss))
 			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
-			f.write("number of users: " + str(count))
-			f.write("user level accuracy:" + str(float(acc)/count))
+			f.write("Number of users: " + str(count))
+			f.write("User level test accuracy:" + str(float(acc)/count))
 			f.close()
 
 
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
 	#testing
 	print("---TESTING STARTED---")
-	
+
 	#finds every model in FLAGS.model_path and runs every single one
 	if FLAGS.optimize == True:
 		models = os.listdir(FLAGS.model_path)

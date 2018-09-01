@@ -109,12 +109,32 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 
             for key, value in user_pred.items():
                 count+=1
-                #print "asd"
-                #print key, value
                 if np.argmax(value) == np.argmax(target_values[key]):
                     acc+=1
             print("number of users: " + str(count))
             print("user level accuracy:" + str(float(acc)/count))
+
+
+			#take the logs
+			if FLAGS.optimize:
+				f = open(FLAGS.log_path, "a")
+
+				training_loss_line = "Epoch " + str(epoch) + " training loss: " + str(epoch_loss) + "\n"
+				training_accuracy_line = "Epoch " + str(epoch) + " training accuracy: " + str(epoch_accuracy) + "\n"
+				validation_loss_line = "Epoch " + str(epoch) + " validation loss: " + str(batch_loss) + "\n"
+				validation_accuracy_line = "Epoch " + str(epoch) + " validation accuracy: " + str(batch_accuracy) + "\n"
+            	user_count_line = "number of users: " + str(count)
+            	user_level_Accuracy_line = "user level accuracy:" + str(float(acc)/count)
+
+				f.write(training_loss_line)
+				f.write(training_accuracy_line)
+				f.write(validation_loss_line)
+				f.write(validation_accuracy_line)
+				f.write(user_count_line)
+				f.write(user_level_Accuracy_line)
+
+				f.close()
+
 
             #save the model if it performs above the threshold
             #naming convention for the model : {"language"}-model-{"learning rate"}-{"reg. param."}-{"epoch number"}
