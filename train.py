@@ -4,7 +4,7 @@ from preprocess import *
 
 def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings):
 
-    saver = tf.train.Saver()
+    saver = tf.train.Saver(max_to_keep=None)
     count=0
     acc=0
 
@@ -118,7 +118,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 
             #save the model if it performs above the threshold
             #naming convention for the model : {"language"}-model-{"learning rate"}-{"reg. param."}-{"epoch number"}
-            if batch_accuracy >= FLAGS.model_save_threshold:
+            if batch_accuracy >= FLAGS.model_save_threshold_tweet or float(acc)/count >= FLAGS.model_save_threshold_user:
                 model_name = str(FLAGS.lang) + "-model-" + str(FLAGS.learning_rate) + "-" + str(FLAGS.l2_reg_lambda) + "-" + str(epoch) + ".ckpt"
                 save_as = os.path.join(FLAGS.model_path, model_name)
                 save_path = saver.save(sess, save_as)
@@ -129,6 +129,54 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 
 
 
+####################################################################################################################
+#main function for standalone runs
+####################################################################################################################
+if __name__ == "__main__":
+
+	print("---PREPROCESSING STARTED---")
+
+	print("\treading word embeddings...")
+	vocabulary, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
+
+	print("\treading tweets...")
+	tweets, users, target_values, seq_lengths = readData(FLAGS.training_data_path)
+
+	print("\tconstructing datasets and network...")
+	training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths = partite_dataset(tweets, users, seq_lengths)
+
+
+	#single run on training data
+	if FLAGS.optimize == False:
+		net = network(embeddings)
+		print("---TRAINING STARTED---")
+		model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) 
+		model_specs += ", cell size:" + str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size) + ", language:" + FLAGS.lang
+		print(model_specs)
+		train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
+
+	#hyperparameter optimization
+	else:
+		for learning_rate in FLAGS.l_rate:
+			for regularization_param in FLAGS.reg_param:
+				tf.reset_default_graph()
+				net = network(embeddings)
+				FLAGS.learning_rate = learning_rate
+				FLAGS.l2_reg_lambda = regularization_param
+
+				print("---TRAINING STARTED---")
+				model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) 
+				model_specs += ", cell size:" + str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size) + ", language:" + FLAGS.lang
+				print(model_specs)
+
+				#take the logs
+				f = open(FLAGS.log_path,"a")
+				f.write("---TRAINING STARTED---\n")
+				model_specs += "\n"
+				f.write(model_specs)
+				f.close()
+
+				train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
 
 
 
