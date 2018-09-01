@@ -71,44 +71,41 @@ def readGloveEmbeddings(path, embedding_size):
 #	      dict ("target_values") = Author(key) - ground-truth(value) pairs
 #	      list ("seq-lengths")   = Lenght of each tweet in the list "training_set"
 def readData(path):
-    path = path + "/" + FLAGS.lang + "/text"
+    path = os.path.join(os.path.join(path,FLAGS.lang),"text")
     tokenizer = TweetTokenizer()
     training_set = []
     target_values = {}
     seq_lengths = []
 
-    # for each author
-    for name in os.listdir(path):
+    truth_file_name = os.path.join(path,"truth.txt")
+    text = open(truth_file_name, 'r')
 
+    # each line = each author
+    for line in text:
+        words = line.strip().split(':::')
+        if words[1] == "female":
+            target_values[words[0]] = [0, 1]
+        elif words[1] == "male":
+            target_values[words[0]] = [1, 0]
 
-        if name.endswith(".txt"):
-            text = open(path + "/" + name, 'r')
+    targets = list(target_values.keys())
+    np.random.shuffle(targets)
 
-            # each line = each author
-            for line in text:
-                words = line.strip().split(':::')
-                if words[1] == "female":
-                    target_values[words[0]] = [0, 1]
-                elif words[1] == "male":
-                    target_values[words[0]] = [1, 0]
+    for user in targets:
+        xml_file_name = os.path.join(path,user)
+        if sys.version_info[0] < 3:
+            xmlFile = open(xml_file_name + ".xml", "r")
+        else:
+            xmlFile = open(xml_file_name + ".xml", "r", encoding="utf-8")
 
-        # tweets are here
-        if name.endswith(".xml"):
+        rootTag = xmlParser.parse(xmlFile).getroot()
 
-            # get author name from file name
-            base = os.path.basename(name)
-            author_id = os.path.splitext(base)[0]
-
-            # parse tweets
-            xmlFile = open(path + "/" + name, "r")
-            rootTag = xmlParser.parse(xmlFile).getroot()
-
-            # for each tweet
-            for documents in rootTag:
-                for document in documents.findall("document"):
-                    words = tokenizer.tokenize(document.text)
-                    training_set.append([author_id, words])  # author-tweet pairs
-                    seq_lengths.append(len(words))  # length of tweets will be fed to rnn as timestep size
+        # for each tweet
+        for documents in rootTag:
+            for document in documents.findall("document"):
+                words = tokenizer.tokenize(document.text)
+                training_set.append([user, words])  # author-tweet pairs
+                seq_lengths.append(len(words))  # length of tweets will be fed to rnn as timestep size
 
     tweets = [row[1] for row in training_set]
     users = [row[0] for row in training_set]
@@ -260,29 +257,42 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 #	      list ("usagetype"_seqlengths)   - Group of seqlengths partitioned according to the FLAGS."usagetype"_set_size
 def partite_dataset(tweets, users, seq_lengths):
 
-    c = list(zip(tweets, users, seq_lengths))
-    random.shuffle(c)
-    tweets, users, seq_lengths = zip(*c)
-    del c
+	training_set_size = int(len(tweets) * FLAGS.training_set_size)
+	valid_set_size = int(len(tweets) * FLAGS.validation_set_size) + training_set_size
 
-    training_set_size = int(len(tweets) * FLAGS.training_set_size)
-    valid_set_size = int(len(tweets) * FLAGS.validation_set_size) + training_set_size
+	#partition each set
+	training_tweets = tweets[:training_set_size]
+	valid_tweets = tweets[training_set_size:valid_set_size]
+	test_tweets = tweets[valid_set_size:]
 
-    training_tweets = tweets[:training_set_size]
-    valid_tweets = tweets[training_set_size:valid_set_size]
-    test_tweets = tweets[valid_set_size:]
+	training_users = users[:training_set_size]
+	valid_users = users[training_set_size:valid_set_size]
+	test_users = users[valid_set_size:]
 
-    training_users = users[:training_set_size]
-    valid_users = users[training_set_size:valid_set_size]
-    test_users = users[valid_set_size:]
+	training_seq_lengths = seq_lengths[:training_set_size]
+	valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
+	test_seq_lengths = seq_lengths[valid_set_size:]
 
-    training_seq_lengths = seq_lengths[:training_set_size]
-    valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
-    test_seq_lengths = seq_lengths[valid_set_size:]
 
-    print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
+	#shuffle each set
+	if len(training_tweets) != 0:
+		c = list(zip(training_tweets, training_users, training_seq_lengths))
+		random.shuffle(c)
+		training_tweets, training_users, training_seq_lengths = zip(*c)
 
-    return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths
+	if len(valid_tweets) != 0:
+	  	c = list(zip(valid_tweets, valid_users, valid_seq_lengths))
+		random.shuffle(c)
+		valid_tweets, valid_users, valid_seq_lengths = zip(*c)
+
+	if len(test_tweets) != 0:
+		c = list(zip(test_tweets, test_users, test_seq_lengths))
+		random.shuffle(c)
+		test_tweets, test_users, test_seq_lengths = zip(*c)
+
+	print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
+
+	return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths
 
 
 

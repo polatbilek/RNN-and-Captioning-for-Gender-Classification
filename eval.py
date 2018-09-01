@@ -70,11 +70,11 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 
 		if FLAGS.optimize:
 			f = open(FLAGS.log_path, "a")
-			f.write("\nwith model:" + load_as)
-			f.write("Test loss: " + "{0:5.4f}".format(batch_loss))
-			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
-			f.write("Number of users: " + str(count))
-			f.write("User level test accuracy:" + str(float(acc)/count))
+			f.write("\nwith model:" + load_as + "\n")
+			f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
+			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
+			f.write("Number of users: " + str(count) + "\n")
+			f.write("User level test accuracy:" + str(float(acc)/count) + "\n")
 			f.close()
 
 
@@ -106,6 +106,7 @@ if __name__ == "__main__":
 				tf.reset_default_graph()
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
+
 	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
 	else:
 		tf.reset_default_graph()
