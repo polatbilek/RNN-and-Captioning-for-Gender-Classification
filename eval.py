@@ -55,6 +55,13 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 		print("Test loss: " + "{0:5.4f}".format(batch_loss))
 		print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
 
+		if FLAGS.optimize:
+			f = open(FLAGS.log_path, "a"
+			f.write("with model:" + load_as)
+			f.write("Test loss: " + "{0:5.4f}".format(batch_loss))
+			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
+			f.close()
+
 
 
 
