@@ -171,12 +171,13 @@ if __name__ == "__main__":
 				model_specs += ", cell size:" + str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size) + ", language:" + FLAGS.lang
 				print(model_specs)
 
-				if FLAGS.optimize:
-					f = open(FLAGS.log_path,"a")
-					f.write("---TRAINING STARTED---\n")
-					model_specs += "\n"
-					f.write(model_specs)
-					f.close()
+				#take the logs
+				f = open(FLAGS.log_path,"a")
+				f.write("---TRAINING STARTED---\n")
+				model_specs += "\n"
+				f.write(model_specs)
+				f.close()
+
 				train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
 
 

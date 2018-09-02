@@ -22,7 +22,6 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 		sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
 		batch_loss = 0.0
 		batch_accuracy = 0.0
-		num_batches = 0
 
 		#load the model from checkpoint file
 		load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
@@ -50,14 +49,19 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 			#calculate the metrics
 			batch_loss += loss
 			batch_accuracy += accuracy
-			num_batches += 1
 
 		#print the accuracy and progress of the validation
 		batch_accuracy /= batch_count
-		print batch_count
 		print("Test loss: " + "{0:5.4f}".format(batch_loss))
 		print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
 
+		#take the logs
+		if FLAGS.optimize:
+			f = open(FLAGS.log_path, "a")
+			f.write("\nwith model:" + load_as + "\n")
+			f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
+			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
+			f.close()
 
 
 
@@ -78,6 +82,7 @@ if __name__ == "__main__":
 	#testing
 	print("---TESTING STARTED---")
 	
+	#finds every model in FLAGS.model_path and runs every single one
 	if FLAGS.optimize == True:
 		models = os.listdir(FLAGS.model_path)
 		for model in models:
@@ -86,6 +91,11 @@ if __name__ == "__main__":
 				tf.reset_default_graph()
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
+	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
+	else:
+		tf.reset_default_graph()
+		net = network(embeddings)
+		test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
 
 
 
