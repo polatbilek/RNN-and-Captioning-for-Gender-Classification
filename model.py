@@ -180,7 +180,7 @@ class network(object):
 
 		# Embedding layer
 		with tf.name_scope("embedding"):
-			W = tf.Variable(tf.random_uniform([vocab_size, FLAGS.embedding_dim], -1.0, 1.0), name="W")
+			W = tf.Variable(tf.random_uniform([vocab_size, FLAGS.char_embedding_size], -1.0, 1.0), name="W")
 			self.embedded_chars = tf.nn.embedding_lookup(W, self.input_x)
 			self.embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
 
@@ -189,7 +189,7 @@ class network(object):
 		for i, filter_size in enumerate(filter_sizes):
 			with tf.name_scope("conv-maxpool-%s" % filter_size):
 				# Convolution Layer
-				filter_shape = [filter_size, FLAGS.embedding_dim, 1, FLAGS.num_filters]
+				filter_shape = [filter_size, FLAGS.char_embedding_size, 1, FLAGS.num_filters]
 				W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
 				b = tf.Variable(tf.constant(0.1, shape=[FLAGS.num_filters]), name="b-noreg")
 				conv = tf.nn.conv2d(
