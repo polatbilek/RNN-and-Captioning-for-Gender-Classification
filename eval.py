@@ -12,7 +12,7 @@ from model import network
 #####################################################################################################################
 def test(network, test_tweets, test_users, test_seq_lengths, target_values, vocabulary, embeddings):
 	
-	saver = tf.train.Saver()
+	saver = tf.train.Saver(max_to_keep=None)
 
 	with tf.Session() as sess:
 

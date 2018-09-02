@@ -44,12 +44,12 @@ class flags(object):
 		self.num_classes = 2
 			#CNN
 		self.num_filters = 75
-			#RNN
-		self.word_embedding_size = 200
-		self.rnn_cell_size = 50
 		self.sequence_length = 190
 		self.char_embedding_size = 25
 		self.filter_sizes = "3,6,9"
+			#RNN
+		self.word_embedding_size = 200
+		self.rnn_cell_size = 50
 
 
 

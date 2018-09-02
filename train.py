@@ -11,7 +11,7 @@ from model import network
 ###########################################################################################################################
 def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings):
 
-	saver = tf.train.Saver()
+	saver = tf.train.Saver(max_to_keep=None)
 
 	with tf.Session() as sess:
 
@@ -47,7 +47,6 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				#prepare the batch
 				training_batch_x, training_batch_y = prepCharBatchData_tweet(training_tweets, training_users, target_values, batch)
 				training_batch_x = char2id_tweet(training_batch_x, vocabulary)
-
 
 				#run the graph
 				feed_dict = {network.input_x: training_batch_x, network.input_y: training_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
@@ -97,6 +96,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 						user_pred[valid_users[i + (batch * 100)]] = score
 					except:
 						user_pred[valid_users[i + (batch * 100)]] = prediction[i]
+
 
 			# print the accuracy and progress of the validation
 			batch_accuracy /= valid_batch_count
@@ -167,27 +167,35 @@ if __name__ == "__main__":
 	tweets, users, target_values, seq_lengths = readData(FLAGS.training_data_path)
 
 	print("\tconstructing datasets and network...")
-	training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths = partite_dataset(tweets, users, seq_lengths)
+	training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths = partite_dataset_tweet(tweets, users, seq_lengths)
 
 
 	#single run on training data
 	if FLAGS.optimize == False:
-		net = network(embeddings)
+
+		#print specs
 		print("---TRAINING STARTED---")
 		model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) 
 		model_specs += ", filter size(s):" + str(FLAGS.filter_sizes) + ", embedding size:" + str(FLAGS.char_embedding_size) + ", language:" + FLAGS.lang
 		print(model_specs)
+
+		#run the network
+		tf.reset_default_graph()
+		net = network(embeddings)
 		train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
 
 	#hyperparameter optimization
 	else:
 		for learning_rate in FLAGS.l_rate:
 			for regularization_param in FLAGS.reg_param:
+
+				#prep the network
 				tf.reset_default_graph()
 				net = network(embeddings)
 				FLAGS.learning_rate = learning_rate
 				FLAGS.l2_reg_lambda = regularization_param
 
+				#prin specs
 				print("---TRAINING STARTED---")
 				model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) 
 				model_specs += ", filter size(s):" + str(FLAGS.filter_sizes) + ", embedding size:" + str(FLAGS.char_embedding_size) + ", language:" + FLAGS.lang
@@ -200,5 +208,10 @@ if __name__ == "__main__":
 				f.write(model_specs)
 				f.close()
 
+				#start training
 				train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
+
+
+
+
 
