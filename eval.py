@@ -67,7 +67,17 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 
 
 
+
+
+
+
+
+
+
+
+#############################################################################################################
 #main function for standalone runs
+#############################################################################################################
 if __name__ == "__main__":
 
 	print("---PREPROCESSING STARTED---")
@@ -79,9 +89,8 @@ if __name__ == "__main__":
 	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)
 	print("\ttest set size: " + str(len(tweets)))
 
-	#testing
-	print("---TESTING STARTED---")
 	
+	print("---TESTING STARTED---")
 	#finds every model in FLAGS.model_path and runs every single one
 	if FLAGS.optimize == True:
 		models = os.listdir(FLAGS.model_path)
