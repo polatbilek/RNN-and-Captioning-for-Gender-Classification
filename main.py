@@ -39,12 +39,13 @@ if __name__ == "__main__":
 				model_specs+=  str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size) + ", language:" + FLAGS.lang
 				print(model_specs)
 
-				if FLAGS.optimize:
-					f = open(FLAGS.log_path,"a")
-					f.write("---TRAINING STARTED---\n")
-					model_specs += "\n"
-					f.write(model_specs)
-					f.close()
+				#take the logs
+				f = open(FLAGS.log_path,"a")
+				f.write("---TRAINING STARTED---\n")
+				model_specs += "\n"
+				f.write(model_specs)
+				f.close()
+
 				train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)	
 
 
@@ -54,6 +55,8 @@ if __name__ == "__main__":
 	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)
 	print("\ttest set size: " + str(len(tweets)))
 
+
+	#finds every model in FLAGS.model_path and runs every single one
 	if FLAGS.optimize == True:
 		models = os.listdir(FLAGS.model_path)
 		for model in models:
@@ -62,6 +65,11 @@ if __name__ == "__main__":
 				tf.reset_default_graph()
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
+	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
+	else:
+		tf.reset_default_graph()
+		net = network(embeddings)
+		test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
 
 
 

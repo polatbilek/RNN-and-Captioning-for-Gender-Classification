@@ -56,10 +56,10 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 		print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
 
 		if FLAGS.optimize:
-			f = open(FLAGS.log_path, "a"
-			f.write("with model:" + load_as)
-			f.write("Test loss: " + "{0:5.4f}".format(batch_loss))
-			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
+			f = open(FLAGS.log_path, "a")
+			f.write("\nwith model:" + load_as + "\n")
+			f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
+			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
 			f.close()
 
 
@@ -82,6 +82,7 @@ if __name__ == "__main__":
 	#testing
 	print("---TESTING STARTED---")
 	
+	#finds every model in FLAGS.model_path and runs every single one
 	if FLAGS.optimize == True:
 		models = os.listdir(FLAGS.model_path)
 		for model in models:
@@ -90,6 +91,11 @@ if __name__ == "__main__":
 				tf.reset_default_graph()
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
+	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
+	else:
+		tf.reset_default_graph()
+		net = network(embeddings)
+		test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
 
 
 

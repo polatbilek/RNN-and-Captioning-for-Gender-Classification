@@ -357,8 +357,7 @@ def partite_dataset(tweets, users, seq_lengths):
     valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
     test_seq_lengths = seq_lengths[valid_set_size:]
 
-    print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(
-        len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
+    print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
 
     return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths
 
@@ -398,7 +397,6 @@ def partite_dataset_tweet(tweets, users, seq_lengths):
 	valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
 	test_seq_lengths = seq_lengths[valid_set_size:]
 
-	print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(
-		len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
+	print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
 
 	return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths
