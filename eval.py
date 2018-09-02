@@ -94,15 +94,13 @@ if __name__ == "__main__":
 
 	print("---PREPROCESSING STARTED---")
 
-	print("\treading word embeddings...")
-	vocabulary, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
+	print("\treading char embeddings...")
+	vocabulary, embeddings = readCharEmbeddings(FLAGS.char_embed_path, FLAGS.char_embedding_size)
 
 	print("\treading tweets...")
 	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)
+	print("\ttest set size: " + str(len(tweets)))
 
-	print("\tconstructing datasets and network...")
-	tf.reset_default_graph()
-	net = network(embeddings)
 
 	print("---TESTING STARTED---")
 	#finds every model in FLAGS.model_path and runs every single one

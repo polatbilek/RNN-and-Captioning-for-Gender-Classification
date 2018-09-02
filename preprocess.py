@@ -145,9 +145,6 @@ def readData(path):
     tweets = [row[1] for row in training_set]
     users = [row[0] for row in training_set]
 
-    c = list(zip(tweets, users, seq_lengths))
-    random.shuffle(c)
-    tweets, users, seq_lengths = zip(*c)
 
     return tweets, users, target_values, seq_lengths
 
@@ -559,13 +556,10 @@ def partite_dataset(tweets, users, seq_lengths):
 #	      list ("usagetype"_seqlengths)   - Group of seqlengths partitioned according to the FLAGS."usagetype"_set_size
 def partite_dataset_tweet(tweets, users, seq_lengths):
 
-	c = list(zip(tweets, users, seq_lengths))
-	random.shuffle(c)
-	tweets, users, seq_lengths = zip(*c)
-
 	training_set_size = int(len(tweets) * FLAGS.training_set_size)
 	valid_set_size = int(len(tweets) * FLAGS.validation_set_size) + training_set_size
 
+	#partition each set
 	training_tweets = tweets[:training_set_size]
 	valid_tweets = tweets[training_set_size:valid_set_size]
 	test_tweets = tweets[valid_set_size:]
@@ -578,7 +572,30 @@ def partite_dataset_tweet(tweets, users, seq_lengths):
 	valid_seq_lengths = seq_lengths[training_set_size:valid_set_size]
 	test_seq_lengths = seq_lengths[valid_set_size:]
 
+
+	#shuffle each set
+	if len(training_tweets) != 0:
+		c = list(zip(training_tweets, training_users, training_seq_lengths))
+		random.shuffle(c)
+		training_tweets, training_users, training_seq_lengths = zip(*c)
+
+	if len(valid_tweets) != 0:
+	  	c = list(zip(valid_tweets, valid_users, valid_seq_lengths))
+		random.shuffle(c)
+		valid_tweets, valid_users, valid_seq_lengths = zip(*c)
+
+	if len(test_tweets) != 0:
+		c = list(zip(test_tweets, test_users, test_seq_lengths))
+		random.shuffle(c)
+		test_tweets, test_users, test_seq_lengths = zip(*c)
+
+
 	print("\ttraining set size=" + str(len(training_tweets)) + " validation set size=" + str(
 		len(valid_tweets)) + " test set size=" + str(len(test_tweets)))
 
 	return training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths
+
+
+
+
+
