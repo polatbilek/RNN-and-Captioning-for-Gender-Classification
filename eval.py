@@ -59,19 +59,20 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 				except:
 					user_pred[test_users[i+(batch*100)]] = prediction[i]
 
+		#calculate user level accuracy
+		for key, value in user_pred.items():
+			count+=1
+			if np.argmax(value) == np.argmax(target_values[key]):
+				acc+=1
 
 		#print the accuracy and progress of the validation
 		batch_accuracy /= batch_count
 		print("Test loss: " + "{0:5.4f}".format(batch_loss))
 		print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
-
-		for key, value in user_pred.items():
-			count+=1
-			if np.argmax(value) == np.argmax(target_values[key]):
-				acc+=1
 		print("number of users: " + str(count))
 		print("user level accuracy:" + str(float(acc)/count))
 
+		#take the logs
 		if FLAGS.optimize:
 			f = open(FLAGS.log_path, "a")
 			f.write("\nwith model:" + load_as + "\n")
