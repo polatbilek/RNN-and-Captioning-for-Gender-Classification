@@ -22,6 +22,10 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 		sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
 		batch_loss = 0.0
 		batch_accuracy = 0.0
+		user_pred={}
+		acc=0
+		count=0
+
 
 		#load the model from checkpoint file
 		load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
@@ -48,12 +52,12 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 
 			for i in range(len(prediction)):
 				try:
-					score = user_pred[valid_users[i+(batch*100)]]
+					score = user_pred[test_users[i+(batch*100)]]
 					score[0] += prediction[i][0]
 					score[1] += prediction[i][1]
-					user_pred[valid_users[i+(batch*100)]] = score
+					user_pred[test_users[i+(batch*100)]] = score
 				except:
-					user_pred[valid_users[i+(batch*100)]] = prediction[i]
+					user_pred[test_users[i+(batch*100)]] = prediction[i]
 
 
 		#print the accuracy and progress of the validation

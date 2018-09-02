@@ -120,8 +120,8 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				training_accuracy_line = "Epoch " + str(epoch) + " training accuracy: " + str(epoch_accuracy) + "\n"
 				validation_loss_line = "Epoch " + str(epoch) + " validation loss: " + str(batch_loss) + "\n"
 				validation_accuracy_line = "Epoch " + str(epoch) + " validation accuracy: " + str(batch_accuracy) + "\n"
-				user_count_line = "number of users: " + str(count)
-				user_level_Accuracy_line = "user level accuracy:" + str(float(acc)/count)
+				user_count_line = "number of users: " + str(count) + "\n"
+				user_level_Accuracy_line = "user level accuracy:" + str(float(acc)/count) + "\n"
 
 				f.write(training_loss_line)
 				f.write(training_accuracy_line)
