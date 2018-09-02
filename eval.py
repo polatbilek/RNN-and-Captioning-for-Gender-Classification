@@ -25,7 +25,6 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 		count = 0
 		batch_loss = 0.0
 		batch_accuracy = 0.0
-		num_batches = 0
 
 		#load the model from checkpoint file
 		load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
@@ -36,7 +35,6 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 		#start evaluating each batch of test data
 		batch_count = int(len(test_tweets) / (FLAGS.batch_size*FLAGS.tweet_per_user))
 
-		print("Testing...")
 		for batch in range(batch_count):
 
 			#prepare the batch
@@ -50,7 +48,6 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 			#calculate the metrics
 			batch_loss += loss
 			batch_accuracy += accuracy
-			num_batches += 1
 
 			for i in range(len(prediction)):
 				try:
@@ -61,17 +58,31 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 				except:
 					user_pred[test_users[i + (batch * 100)]] = prediction[i]
 
+		#calculate user level accuracy
 		for key, value in user_pred.items():
 			count += 1
 			if np.argmax(value) == np.argmax(target_values[key]):
 				acc += 1
+
+		#print the accuracy and progress of the test
+		batch_accuracy /= batch_count
+		print("Tweet level test loss: " + "{0:5.4f}".format(batch_loss))
+		print("Tweet level test accuracy: " + "{0:0.5f}".format(batch_accuracy))
 		print("number of users: " + str(count))
 		print("user level accuracy:" + str(float(acc) / count))
 
-		#print the accuracy and progress of the validation
-		batch_accuracy /= (batch_count-1)
-		print("Test loss: " + "{0:5.4f}".format(batch_loss))
-		print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
+		#take the logs
+		if FLAGS.optimize:
+			f = open(FLAGS.log_path, "a")
+			f.write("\nwith model:" + load_as + "\n")
+			f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
+			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
+			f.write("Number of users: " + str(count) + "\n")
+			f.write("User level test accuracy:" + str(float(acc)/count) + "\n")
+			f.close()
+
+
+
 
 
 
@@ -94,7 +105,20 @@ if __name__ == "__main__":
 	net = network(embeddings)
 
 	print("---TESTING STARTED---")
-	test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
+	#finds every model in FLAGS.model_path and runs every single one
+	if FLAGS.optimize == True:
+		models = os.listdir(FLAGS.model_path)
+		for model in models:
+			if model.endswith(".ckpt.index"):
+				FLAGS.model_name = model[:-6]
+				tf.reset_default_graph()
+				net = network(embeddings)
+				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
+	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
+	else:
+		tf.reset_default_graph()
+		net = network(embeddings)
+		test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
 
 
 
