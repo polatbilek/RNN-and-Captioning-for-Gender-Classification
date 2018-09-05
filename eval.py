@@ -29,6 +29,7 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 
 		#load the model from checkpoint file
 		load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
+		print("\n---TESTING STARTED---")
 		print("Loading the pretrained model from: " + str(load_as))
 		saver.restore(sess, load_as)
 
@@ -75,7 +76,8 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 		#take the logs
 		if FLAGS.optimize:
 			f = open(FLAGS.log_path, "a")
-			f.write("\nwith model:" + load_as + "\n")
+			f.write("\n---TESTING STARTED---\n")			
+			f.write("with model:" + load_as + "\n")
 			f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
 			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
 			f.write("Number of users: " + str(count) + "\n")
