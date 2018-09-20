@@ -18,12 +18,12 @@ class flags(object):
 		#output file paths
 		self.model_path = "/media/darg1/Data/temp_models"
 		self.model_name = "en-model-0.001-1e-05-0.ckpt"
-		self.log_path = "/home/darg1/Desktop/logs/logs_rnn_en_100.txt"
+		self.log_path = "/home/darg1/Desktop/logs/logs_rnn_es_50.txt"
 
 		#optimization parameters
-		self.lang = "en"
-		self.model_save_threshold_user = 0.77
-		self.model_save_threshold_tweet = 0.62
+		self.lang = "es"
+		self.model_save_threshold_user = 0.72
+		self.model_save_threshold_tweet = 0.605
 		self.optimize = True #if true below values will be used for hyper parameter optimization, or if testing is run: all the models in model_path will be tested
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
 		self.l_rate = [0.01, 0.001, 0.0001, 0.00001]
@@ -41,7 +41,7 @@ class flags(object):
 		self.num_filters = 75
 			#RNN
 		self.word_embedding_size = 200
-		self.rnn_cell_size = 100
+		self.rnn_cell_size = 50
 
 
 

@@ -43,7 +43,7 @@ print("there are " + str(len(tweet_sorted_list)) + " models after sorted")
 
 
 #create the list of to be deleted items
-remove_threshold = 5
+remove_threshold = 3
 i = 0
 deletion_list = []
 for i in range(0,len(tweet_sorted_list)-remove_threshold):
