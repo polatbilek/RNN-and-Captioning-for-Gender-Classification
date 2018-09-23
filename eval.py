@@ -101,8 +101,6 @@ if __name__ == "__main__":
 	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)
 	print("\ttest set size: " + str(len(tweets)))
 
-	#testing
-	print("---TESTING STARTED---")
 
 	#finds every model in FLAGS.model_path and runs every single one
 	if FLAGS.optimize == True:
