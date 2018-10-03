@@ -108,7 +108,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 			print("Epoch " + str(epoch) + " training loss: " + "{0:5.4f}".format(epoch_loss))
 			print("Epoch " + str(epoch) + " training accuracy: " + "{0:0.5f}".format(epoch_accuracy))
 			print("Epoch " + str(epoch) + " validation loss: " + "{0:5.4f}".format(batch_loss))
-			print("Epoch " + str(epoch) + " valdiation accuracy: " + "{0:0.5f}".format(batch_accuracy))
+			print("Epoch " + str(epoch) + " validation accuracy: " + "{0:0.5f}".format(batch_accuracy))
 			print("number of users: " + str(count))
 			print("user level accuracy:" + str(float(acc)/count))
 
