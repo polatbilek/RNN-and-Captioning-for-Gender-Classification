@@ -57,6 +57,7 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 
 		if FLAGS.optimize:
 			f = open(FLAGS.log_path, "a")
+			f.write("\n--TESTING STARTED---\n")			
 			f.write("\nwith model:" + load_as + "\n")
 			f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
 			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
@@ -90,7 +91,6 @@ if __name__ == "__main__":
 	print("\ttest set size: " + str(len(tweets)))
 
 	
-	print("---TESTING STARTED---")
 	#finds every model in FLAGS.model_path and runs every single one
 	if FLAGS.optimize == True:
 		models = os.listdir(FLAGS.model_path)

@@ -7,7 +7,6 @@ logs = open(FLAGS.log_path, "r")
 
 
 model_name = ""
-models_with_tweet_accuracy = {}
 models_with_user_accuracy = {}
 count = 0
 
@@ -24,21 +23,15 @@ for line in logs:
 	elif count == 2:
 		count += 1
 	elif count == 3:
-		tweet_accuracy = float(line.strip().split(": ")[-1])
-		count += 1
-	elif count == 4:
-		count +=1
-	elif count == 5:
-		user_accuracy = float(line.strip().split(":")[-1])
-		models_with_tweet_accuracy[model_name] = tweet_accuracy
+		user_accuracy = float(line.strip().split(": ")[-1])
 		models_with_user_accuracy[model_name] = user_accuracy
 		count = 0
+		
 
 
 #sort the models
-tweet_sorted_list = sorted(models_with_tweet_accuracy.items(), key=operator.itemgetter(1))
 user_sorted_list = sorted(models_with_user_accuracy.items(), key=operator.itemgetter(1))
-print("there are " + str(len(tweet_sorted_list)) + " models after sorted")
+print("there are " + str(len(user_sorted_list)) + " files after sorted")
 
 
 
@@ -46,14 +39,8 @@ print("there are " + str(len(tweet_sorted_list)) + " models after sorted")
 remove_threshold = 5
 i = 0
 deletion_list = []
-for i in range(0,len(tweet_sorted_list)-remove_threshold):
-	deletion_list.append(tweet_sorted_list[i][0])
-
-
-#remove from the list the most successful user level models
-for i in range(1,remove_threshold+1):
-	if user_sorted_list[-i][0] in deletion_list:
-		deletion_list.pop(deletion_list.index(user_sorted_list[-i][0]))
+for i in range(0,len(user_sorted_list)-remove_threshold):
+	deletion_list.append(user_sorted_list[i][0])
 
 
 # delete the remaining models
