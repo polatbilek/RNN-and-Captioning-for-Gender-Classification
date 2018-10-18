@@ -10,7 +10,7 @@ class flags(object):
 		#input file paths
 		self.word_embed_path = "/home/cvrg/darg/glove/glove.twitter.27B.200d.txt" #change word embedding size too
 		self.training_data_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27"
-		self.test_data_path = "/media/darg1/Data/dataset/PAN2018/author-profiling/pan18-author-profiling-test-2018-03-20"
+		self.test_data_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-test-2018-03-20"
 		self.char_embed_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-test-2018-03-20"
 		#self.word_embed_path = "C:\\Users\\polat\\Desktop\\PAN_files\\glove\\glove.twitter.27B.50d.txt"
 		#self.training_data_path = "C:\\Users\\polat\\Desktop\\PAN_files\\PAN_data_sets\\pan18-author-profiling-training-2018-02-27"
@@ -27,11 +27,11 @@ class flags(object):
 
 		#optimization parameters
 		self.lang = "ar"
-		self.model_save_threshold_user = 0.73
-		self.model_save_threshold_tweet = 0.60
+		self.model_save_threshold_user = 0.70
+		self.model_save_threshold_tweet = 0.61
 		self.optimize = True #if true below values will be used for hyper parameter optimization, or if testing is run: all the models in model_path will be tested
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
-		self.l_rate = [0.01, 0.001, 0.0001]
+		self.l_rate = [0.01, 0.001, 0.0001, 0.00001]
 		self.reg_param = [0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]
 		self.filter_sizes = [50, 75, 100]
 

@@ -27,11 +27,11 @@ class flags(object):
 
 		#optimization parameters
 		self.lang = "es"
-		self.model_save_threshold_user = 0.70
-		self.model_save_threshold_tweet = 0.59
+		self.model_save_threshold_user = 0.69
+		self.model_save_threshold_tweet = 0.60
 		self.optimize = True #if true below values will be used for hyper parameter optimization, or if testing is run: all the models in model_path will be tested
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
-		self.l_rate = [0.01, 0.001, 0.0001]
+		self.l_rate = [0.01, 0.001, 0.0001, 0.00001]
 		self.reg_param = [0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]
 		self.filter_sizes = [50, 75, 100]
 
