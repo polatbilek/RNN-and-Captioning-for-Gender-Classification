@@ -13,135 +13,136 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 
 	saver = tf.train.Saver(max_to_keep=None)
 
-	with tf.Session() as sess:
+	with tf.device('/device:GPU:0'):
+		with tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)) as sess:
 
-		# init variables
-		init = tf.global_variables_initializer()
-		sess.run(init)
-		sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
-
-
-		#load the model from checkpoint file if it is required
-		if FLAGS.use_pretrained_model == True:
-			load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
-			saver.restore(sess, load_as)
-			print("Loading the pretrained model from: " + str(load_as))
+			# init variables
+			init = tf.global_variables_initializer()
+			sess.run(init)
+			sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
 
 
-		#for each epoch
-		for epoch in range(FLAGS.num_epochs):
-			user_pred = {}
-			acc = 0
-			count = 0
-			epoch_loss = 0.0
-			epoch_accuracy = 0.0
-			num_batches = 0.0            
-			batch_accuracy = 0.0
-			batch_loss = 0.0
-			training_batch_count = int(len(training_tweets) / (FLAGS.batch_size))
-			valid_batch_count = int(len(valid_tweets) / (FLAGS.batch_size))
+			#load the model from checkpoint file if it is required
+			if FLAGS.use_pretrained_model == True:
+				load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
+				saver.restore(sess, load_as)
+				print("Loading the pretrained model from: " + str(load_as))
 
 
-			#TRAINING
-			for batch in range(training_batch_count):
-				#prepare the batch
-				training_batch_x, training_batch_y = prepCharBatchData_tweet(training_tweets, training_users, target_values, batch)
-				training_batch_x = char2id_tweet(training_batch_x, vocabulary)
-
-				#run the graph
-				feed_dict = {network.input_x: training_batch_x, network.input_y: training_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
-				_, loss, prediction, accuracy = sess.run([network.train, network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
-
-				#calculate the metrics
-				batch_loss += loss
-				epoch_loss += loss
-				batch_accuracy += accuracy
-				epoch_accuracy += accuracy
-				num_batches += 1
-
-				#print the accuracy and progress of the training
-				if batch % FLAGS.evaluate_every == 0 and batch != 0:
-					batch_accuracy /= num_batches
-					print("Epoch " +"{:2d}".format(epoch)+ " , Batch " +"{0:5d}".format(batch)+ "/" +str(training_batch_count)+ " , loss= " +"{0:5.4f}".format(batch_loss)+ 
-						" , accuracy= " + "{0:0.5f}".format(batch_accuracy) + " , progress= " +"{0:2.2f}".format((float(batch) / training_batch_count) * 100) + "%")
-					batch_loss = 0.0
-					batch_accuracy = 0.0
-					num_batches = 0.0
+			#for each epoch
+			for epoch in range(FLAGS.num_epochs):
+				user_pred = {}
+				acc = 0
+				count = 0
+				epoch_loss = 0.0
+				epoch_accuracy = 0.0
+				num_batches = 0.0            
+				batch_accuracy = 0.0
+				batch_loss = 0.0
+				training_batch_count = int(len(training_tweets) / (FLAGS.batch_size))
+				valid_batch_count = int(len(valid_tweets) / (FLAGS.batch_size))
 
 
+				#TRAINING
+				for batch in range(training_batch_count):
+					#prepare the batch
+					training_batch_x, training_batch_y = prepCharBatchData_tweet(training_tweets, training_users, target_values, batch)
+					training_batch_x = char2id_tweet(training_batch_x, vocabulary)
 
-			#VALIDATION     
-			batch_accuracy = 0.0
-			batch_loss = 0.0
+					#run the graph
+					feed_dict = {network.input_x: training_batch_x, network.input_y: training_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
+					_, loss, prediction, accuracy = sess.run([network.train, network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
-			for batch in range(valid_batch_count):
+					#calculate the metrics
+					batch_loss += loss
+					epoch_loss += loss
+					batch_accuracy += accuracy
+					epoch_accuracy += accuracy
+					num_batches += 1
 
-				#prepare the batch
-				valid_batch_x, valid_batch_y = prepCharBatchData_tweet(valid_tweets, valid_users, target_values, batch)
-				valid_batch_x = char2id_tweet(valid_batch_x, vocabulary)
-
-				#run the graph
-				feed_dict = {network.input_x: valid_batch_x, network.input_y: valid_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
-				loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
-
-				# calculate the metrics
-				batch_loss += loss
-				batch_accuracy += accuracy
-
-				for i in range(len(prediction)):
-					try:
-						score = user_pred[valid_users[i + (batch * 100)]]
-						score[0] += prediction[i][0]
-						score[1] += prediction[i][1]
-						user_pred[valid_users[i + (batch * 100)]] = score
-					except:
-						user_pred[valid_users[i + (batch * 100)]] = prediction[i]
+					#print the accuracy and progress of the training
+					if batch % FLAGS.evaluate_every == 0 and batch != 0:
+						batch_accuracy /= num_batches
+						print("Epoch " +"{:2d}".format(epoch)+ " , Batch " +"{0:5d}".format(batch)+ "/" +str(training_batch_count)+ " , loss= " +"{0:5.4f}".format(batch_loss)+ 
+							" , accuracy= " + "{0:0.5f}".format(batch_accuracy) + " , progress= " +"{0:2.2f}".format((float(batch) / training_batch_count) * 100) + "%")
+						batch_loss = 0.0
+						batch_accuracy = 0.0
+						num_batches = 0.0
 
 
-			# print the accuracy and progress of the validation
-			batch_accuracy /= valid_batch_count
-			epoch_accuracy /= training_batch_count
-			print("Epoch " + str(epoch) + " training loss: " + "{0:5.4f}".format(epoch_loss))
-			print("Epoch " + str(epoch) + " training accuracy: " + "{0:0.5f}".format(epoch_accuracy))
-			print("Epoch " + str(epoch) + " validation loss: " + "{0:5.4f}".format(batch_loss))
-			print("Epoch " + str(epoch) + " valdiation accuracy: " + "{0:0.5f}".format(batch_accuracy))
 
-			#calculate user level accuracy
-			for key, value in user_pred.items():
-				count += 1
-				if np.argmax(value) == np.argmax(target_values[key]):
-					acc += 1
-			print("number of users: " + str(count))
-			print("user level accuracy:" + str(float(acc) / count))
+				#VALIDATION     
+				batch_accuracy = 0.0
+				batch_loss = 0.0
 
-			#take the logs
-			if FLAGS.optimize:
-				f = open(FLAGS.log_path, "a")
+				for batch in range(valid_batch_count):
 
-				training_loss_line = "Epoch " + str(epoch) + " training loss: " + str(epoch_loss) + "\n"
-				training_accuracy_line = "Epoch " + str(epoch) + " training accuracy: " + str(epoch_accuracy) + "\n"
-				validation_loss_line = "Epoch " + str(epoch) + " validation loss: " + str(batch_loss) + "\n"
-				validation_accuracy_line = "Epoch " + str(epoch) + " validation accuracy: " + str(batch_accuracy) + "\n"
-				user_count_line = "number of users: " + str(count) + "\n"
-				user_level_Accuracy_line = "user level accuracy:" + str(float(acc)/count) + "\n"
+					#prepare the batch
+					valid_batch_x, valid_batch_y = prepCharBatchData_tweet(valid_tweets, valid_users, target_values, batch)
+					valid_batch_x = char2id_tweet(valid_batch_x, vocabulary)
 
-				f.write(training_loss_line)
-				f.write(training_accuracy_line)
-				f.write(validation_loss_line)
-				f.write(validation_accuracy_line)
-				f.write(user_count_line)
-				f.write(user_level_Accuracy_line)
+					#run the graph
+					feed_dict = {network.input_x: valid_batch_x, network.input_y: valid_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
+					loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
-				f.close()
+					# calculate the metrics
+					batch_loss += loss
+					batch_accuracy += accuracy
+
+					for i in range(len(prediction)):
+						try:
+							score = user_pred[valid_users[i + (batch * 100)]]
+							score[0] += prediction[i][0]
+							score[1] += prediction[i][1]
+							user_pred[valid_users[i + (batch * 100)]] = score
+						except:
+							user_pred[valid_users[i + (batch * 100)]] = prediction[i]
 
 
-			#save the model if it performs above the threshold
-			#naming convention for the model : {"language"}-model-{"learning rate"}-{"reg. param."}-{"epoch number"}
-			if batch_accuracy >= FLAGS.model_save_threshold_tweet or (float(acc)/count) >= FLAGS.model_save_threshold_user:
-				model_name = str(FLAGS.lang) + "-model-" + str(FLAGS.learning_rate) + "-" + str(FLAGS.l2_reg_lambda) + "-" + str(epoch) + ".ckpt"
-				save_as = os.path.join(FLAGS.model_path, model_name)
-				save_path = saver.save(sess, save_as)
-				print("Model saved in path: %s" % save_path)
+				# print the accuracy and progress of the validation
+				batch_accuracy /= valid_batch_count
+				epoch_accuracy /= training_batch_count
+				print("Epoch " + str(epoch) + " training loss: " + "{0:5.4f}".format(epoch_loss))
+				print("Epoch " + str(epoch) + " training accuracy: " + "{0:0.5f}".format(epoch_accuracy))
+				print("Epoch " + str(epoch) + " validation loss: " + "{0:5.4f}".format(batch_loss))
+				print("Epoch " + str(epoch) + " valdiation accuracy: " + "{0:0.5f}".format(batch_accuracy))
+
+				#calculate user level accuracy
+				for key, value in user_pred.items():
+					count += 1
+					if np.argmax(value) == np.argmax(target_values[key]):
+						acc += 1
+				print("number of users: " + str(count))
+				print("user level accuracy:" + str(float(acc) / count))
+
+				#take the logs
+				if FLAGS.optimize:
+					f = open(FLAGS.log_path, "a")
+
+					training_loss_line = "Epoch " + str(epoch) + " training loss: " + str(epoch_loss) + "\n"
+					training_accuracy_line = "Epoch " + str(epoch) + " training accuracy: " + str(epoch_accuracy) + "\n"
+					validation_loss_line = "Epoch " + str(epoch) + " validation loss: " + str(batch_loss) + "\n"
+					validation_accuracy_line = "Epoch " + str(epoch) + " validation accuracy: " + str(batch_accuracy) + "\n"
+					user_count_line = "number of users: " + str(count) + "\n"
+					user_level_Accuracy_line = "user level accuracy:" + str(float(acc)/count) + "\n"
+
+					f.write(training_loss_line)
+					f.write(training_accuracy_line)
+					f.write(validation_loss_line)
+					f.write(validation_accuracy_line)
+					f.write(user_count_line)
+					f.write(user_level_Accuracy_line)
+
+					f.close()
+
+
+				#save the model if it performs above the threshold
+				#naming convention for the model : {"language"}-model-{"learning rate"}-{"reg. param."}-{"epoch number"}
+				if batch_accuracy >= FLAGS.model_save_threshold_tweet or (float(acc)/count) >= FLAGS.model_save_threshold_user:
+					model_name = str(FLAGS.lang) + "-model-" + str(FLAGS.num_filters) + "-" + str(FLAGS.learning_rate) + "-" + str(FLAGS.l2_reg_lambda) + "-" + str(epoch) + ".ckpt"
+					save_as = os.path.join(FLAGS.model_path, model_name)
+					save_path = saver.save(sess, save_as)
+					print("Model saved in path: %s" % save_path)
 
 
 
