@@ -10,8 +10,8 @@ class flags(object):
 		#input file paths
 		self.word_embed_path = "/home/cvrg/darg/glove/glove.twitter.27B.200d.txt" #change word embedding size too
 		self.training_data_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27"
-		self.test_data_path = "/media/darg1/Data/dataset/PAN2018/author-profiling/pan18-author-profiling-test-2018-03-20"
-		self.char_embed_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-test-2018-03-20"
+		self.test_data_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-test-2018-03-20"
+		self.char_embed_path = "/home/cvrg/darg/pan_data/char_embeddings.27B.25d.txt"
 		#self.word_embed_path = "C:\\Users\\polat\\Desktop\\PAN_files\\glove\\glove.twitter.27B.50d.txt"
 		#self.training_data_path = "C:\\Users\\polat\\Desktop\\PAN_files\\PAN_data_sets\\pan18-author-profiling-training-2018-02-27"
 		#self.char_embed_path = "C:\\Users\\polat\\Desktop\\RNN-and-Captioning-for-Gender-Classification\\char_embeddings.27B.25d.txt"
