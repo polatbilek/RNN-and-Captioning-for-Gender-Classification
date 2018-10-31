@@ -20,7 +20,7 @@ class flags(object):
 		#output file paths
 		self.model_path = "/media/cvrg/HDD/darg/models/es"
 		self.model_name = "en-model-0.001-0.0001-0.ckpt"
-		self.log_path = "/home/cvrg/darg/logs/logs_rnn_es.txt"
+		self.log_path = "/home/cvrg/darg/logs/logs_cnn_es.txt"
 		#self.log_path = "C:\\Users\\polat\\Desktop\\logs_rnn.txt"
 		#self.model_path = "C:\\Users\\polat\\Desktop\\RNN-and-Captioning-for-Gender-Classification\\models"
 
