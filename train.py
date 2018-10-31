@@ -169,9 +169,9 @@ if __name__ == "__main__":
 
 				#run the network
 				tf.reset_default_graph()
-				net = network(embeddings)
 				FLAGS.learning_rate = learning_rate
 				FLAGS.l2_reg_lambda = regularization_param
+				net = network(embeddings)
 
 				#print specs
 				print("---TRAINING STARTED---")
