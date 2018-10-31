@@ -43,10 +43,10 @@ if __name__ == "__main__":
 
 					#prep the network
 					tf.reset_default_graph()
-					net = network(embeddings)
 					FLAGS.learning_rate = learning_rate
 					FLAGS.l2_reg_lambda = regularization_param
 					FLAGS.rnn_cell_size = rnn_cell_size
+					net = network(embeddings)
 
 					#print specs
 					print("---TRAINING STARTED---")

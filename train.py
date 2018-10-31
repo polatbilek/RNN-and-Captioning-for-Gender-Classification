@@ -13,7 +13,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 
 	saver = tf.train.Saver(max_to_keep=None)
 	with tf.device('/device:GPU:0'):
-		with tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)) as sess:
+		with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
 
 			# init variables
 			init = tf.global_variables_initializer()
@@ -168,31 +168,33 @@ if __name__ == "__main__":
 
 	#hyperparameter optimization
 	else:
-		for learning_rate in FLAGS.l_rate:
-			for regularization_param in FLAGS.reg_param:
+		for rnn_cell_size in FLAGS.rnn_cell_sizes:
+			for learning_rate in FLAGS.l_rate:
+				for regularization_param in FLAGS.reg_param:
 
-				#prep the network
-				tf.reset_default_graph()
-				net = network(embeddings)
-				FLAGS.learning_rate = learning_rate
-				FLAGS.l2_reg_lambda = regularization_param
+					#prep the network
+					tf.reset_default_graph()
+					FLAGS.learning_rate = learning_rate
+					FLAGS.l2_reg_lambda = regularization_param
+					FLAGS.rnn_cell_size = rnn_cell_size
+					net = network(embeddings)
 
-				#print specs
-				print("---TRAINING STARTED---")
-				model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) 
-				model_specs += ", cell size:" + str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size) + ", language:" + FLAGS.lang
-				print(model_specs)
+					#print specs
+					print("---TRAINING STARTED---")
+					model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) 
+					model_specs += ", cell size:" + str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size) + ", language:" + FLAGS.lang
+					print(model_specs)
 
-				#take the logs
-				if FLAGS.optimize:
-					f = open(FLAGS.log_path,"a")
-					f.write("---TRAINING STARTED---\n")
-					model_specs += "\n"
-					f.write(model_specs)
-					f.close()
+					#take the logs
+					if FLAGS.optimize:
+						f = open(FLAGS.log_path,"a")
+						f.write("---TRAINING STARTED---\n")
+						model_specs += "\n"
+						f.write(model_specs)
+						f.close()
 
-				#start training
-				train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
+					#start training
+					train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
 
 
 
