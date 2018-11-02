@@ -14,54 +14,55 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 	
 	saver = tf.train.Saver(max_to_keep=None)
 
-	with tf.Session() as sess:
+	with tf.device('/device:GPU:0'):
+		with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
 
-		# init variables
-		init = tf.global_variables_initializer()
-		sess.run(init)
-		sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
-		batch_loss = 0.0
-		batch_accuracy = 0.0
+			# init variables
+			init = tf.global_variables_initializer()
+			sess.run(init)
+			sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
+			batch_loss = 0.0
+			batch_accuracy = 0.0
 
-		#load the model from checkpoint file
-		load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
-		print("Loading the pretrained model from: " + str(load_as))
-		saver.restore(sess, load_as)
+			#load the model from checkpoint file
+			load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
+			print("Loading the pretrained model from: " + str(load_as))
+			saver.restore(sess, load_as)
 
 
-		#start evaluating each batch of test data
-		batch_count = int(len(test_tweets) / (FLAGS.batch_size*FLAGS.tweet_per_user))
+			#start evaluating each batch of test data
+			batch_count = int(len(test_tweets) / (FLAGS.batch_size*FLAGS.tweet_per_user))
 
-		for batch in range(batch_count):
+			for batch in range(batch_count):
 
-			#prepare the batch
-			test_batch_x, test_batch_y = prepCharBatchData(test_tweets, test_users, target_values, batch)
-			test_batch_x = char2id(test_batch_x, vocabulary)
+				#prepare the batch
+				test_batch_x, test_batch_y = prepCharBatchData(test_tweets, test_users, target_values, batch)
+				test_batch_x = char2id(test_batch_x, vocabulary)
 
-			#Flatten everything to feed CNN
-			test_batch_x = np.reshape(test_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, FLAGS.sequence_length))
+				#Flatten everything to feed CNN
+				test_batch_x = np.reshape(test_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, FLAGS.sequence_length))
 
-			#run the graph
-			feed_dict = {network.input_x: test_batch_x, network.input_y: test_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
-			loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
+				#run the graph
+				feed_dict = {network.input_x: test_batch_x, network.input_y: test_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
+				loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
-			#calculate the metrics
-			batch_loss += loss
-			batch_accuracy += accuracy
+				#calculate the metrics
+				batch_loss += loss
+				batch_accuracy += accuracy
 
-		#print the accuracy and progress of the validation
-		batch_accuracy /= batch_count
-		print("Test loss: " + "{0:5.4f}".format(batch_loss))
-		print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
+			#print the accuracy and progress of the validation
+			batch_accuracy /= batch_count
+			print("Test loss: " + "{0:5.4f}".format(batch_loss))
+			print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
 
-		#take the logs
-		if FLAGS.optimize:
-			f = open(FLAGS.log_path, "a")
-			f.write("\n---TESTING STARTED---\n")
-			f.write("\nwith model:" + load_as + "\n")
-			f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
-			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
-			f.close()
+			#take the logs
+			if FLAGS.optimize:
+				f = open(FLAGS.log_path, "a")
+				f.write("\n---TESTING STARTED---\n")
+				f.write("\nwith model:" + load_as + "\n")
+				f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
+				f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
+				f.close()
 
 
 
@@ -87,6 +88,14 @@ if __name__ == "__main__":
 			if model.endswith(".ckpt.index"):
 				FLAGS.model_name = model[:-6]
 				tf.reset_default_graph()
+
+				if "100" in FLAGS.model_name:
+					FLAGS.num_filters = 100
+				elif "75" in FLAGS.model_name:
+					FLAGS.num_filters = 75
+				elif "50" in FLAGS.model_name:
+					FLAGS.num_filters = 50
+
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
 	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
