@@ -61,7 +61,7 @@ class flags(object):
 		self.tweet_per_user = 100
 		self.batch_size = 10
 		self.num_epochs = 25
-		self.evaluate_every = 25
+		self.evaluate_every = 5
 
 
 

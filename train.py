@@ -19,8 +19,6 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 			# init variables
 			init = tf.global_variables_initializer()
 			sess.run(init)
-			sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
-
 
 			#load the model from checkpoint file if it is required
 			if FLAGS.use_pretrained_model == True:
