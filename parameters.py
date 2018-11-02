@@ -21,7 +21,7 @@ class flags(object):
 		#self.model_path = "C:\\Users\\polat\\Desktop\\RNN-and-Captioning-for-Gender-Classification\\models"
 		self.model_path = "/home/darg1/Desktop/model/author_profiling_rnn/cellsize=100"
 		self.model_name = "en-model-0.01-0.001-0.ckpt"
-		self.log_path = "/home/darg1/Desktop/logs/logs_rnn.txt"
+		self.log_path = "/home/darg1/Desktop/logs/logs_cnn.txt"
 		#self.log_path = "C:\\Users\\polat\\Desktop\\logs_rnn.txt"
 
 		#optimization parameters

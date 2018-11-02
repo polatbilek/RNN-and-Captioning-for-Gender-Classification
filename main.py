@@ -52,7 +52,8 @@ if __name__ == "__main__":
 					#print specs
 					print("---TRAINING STARTED---")
 					model_specs = "with parameters: Learning Rate:" + str( FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", filter size(s):"
-					model_specs += str(FLAGS.filter_sizes) + ", embedding size:" + str(FLAGS.char_embedding_size) + ", language:" + FLAGS.lang
+					model_specs += str(FLAGS.filter_sizes) + ", filter count:" + str(FLAGS.num_filters)
+					model_specs += ", embedding size:" + str(FLAGS.char_embedding_size) + ", language:" + FLAGS.lang
 					print(model_specs)
 
 					#take the logs
