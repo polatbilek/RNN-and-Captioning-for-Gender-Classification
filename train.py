@@ -187,7 +187,7 @@ if __name__ == "__main__":
 
 	#hyperparameter optimization
 	else:
-		for filter_size in filter_sizes:
+		for filter_count in filter_nums:
 			for learning_rate in FLAGS.l_rate:
 				for regularization_param in FLAGS.reg_param:
 
@@ -195,7 +195,7 @@ if __name__ == "__main__":
 					tf.reset_default_graph()
 					FLAGS.learning_rate = learning_rate
 					FLAGS.l2_reg_lambda = regularization_param
-					FLAGS.num_filters = filter_size
+					FLAGS.num_filters = filter_count
 					net = network(embeddings)
 
 					#prin specs

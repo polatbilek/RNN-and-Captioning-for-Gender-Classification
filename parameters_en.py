@@ -33,7 +33,7 @@ class flags(object):
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
 		self.l_rate = [0.01, 0.001, 0.0001, 0.00001]
 		self.reg_param = [0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]
-		self.filter_sizes = [50, 75, 100]
+		self.filter_nums = [50, 75, 100]
 
 
 
