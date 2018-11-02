@@ -18,16 +18,16 @@ class flags(object):
 		#self.test_data_path = "C:\\Users\\polat\\Desktop\\PAN_files\\PAN_data_sets\\pan18-author-profiling-test-2018-03-20"
 
 		#output file paths
-		self.model_path = "/media/cvrg/HDD/darg/models/es"
+		self.model_path = "/media/cvrg/HDD/darg/models/en"
 		self.model_name = "en-model-0.001-0.0001-0.ckpt"
-		self.log_path = "/home/cvrg/darg/logs/logs_CNNwA_es.txt"
+		self.log_path = "/home/cvrg/darg/logs/logs_CNNwA_en.txt"
 		#self.log_path = "C:\\Users\\polat\\Desktop\\logs_rnn.txt"
 		#self.model_path = "C:\\Users\\polat\\Desktop\\RNN-and-Captioning-for-Gender-Classification\\models"
 
 
 		#optimization parameters
-		self.lang = "es"
-		self.model_save_threshold_user = 0.71
+		self.lang = "en"
+		self.model_save_threshold = 0.74
 		self.optimize = True #if true below values will be used for hyper parameter optimization, or if testing is run: all the models in model_path will be tested
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
 		self.l_rate = [0.01, 0.001, 0.0001, 0.00001]
