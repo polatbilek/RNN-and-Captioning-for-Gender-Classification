@@ -41,7 +41,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				#TRAINING
 				for batch in range(training_batch_count):
 					#prepare the batch
-					training_batch_x, training_batch_y = prepCharBatchData(training_tweets, training_users, target_values, batch)
+					training_batch_x, training_batch_y = prepCharBatchData(training_tweets, training_users, target_values, batch)					
 					training_batch_x = char2id(training_batch_x, vocabulary)
 
 					#Flatten everything to feed CNN

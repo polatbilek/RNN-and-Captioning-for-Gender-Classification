@@ -372,9 +372,9 @@ def prepCharBatchData(tweets, users, targets, iter_no):
         tweet_batches[i] = zip(*c)
 
     tweet_batches = list(tweet_batches)
-    target_values = list(target_values)
+    target_batches = list(target_batches)
 
-    return tweet_batches, target_values
+    return tweet_batches, target_batches
 
 
 
