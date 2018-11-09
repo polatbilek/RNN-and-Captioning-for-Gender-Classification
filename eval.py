@@ -58,7 +58,7 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 			if FLAGS.optimize:
 				f = open(FLAGS.log_path, "a")
 				f.write("\n---TESTING STARTED---\n")
-				f.write("\nwith model:" + load_as + "\n")
+				f.write("with model:" + load_as + "\n")
 				f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
 				f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
 				f.close()
