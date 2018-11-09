@@ -20,7 +20,6 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 			# init variables
 			init = tf.global_variables_initializer()
 			sess.run(init)
-			sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
 			batch_loss = 0.0
 			batch_accuracy = 0.0
 
