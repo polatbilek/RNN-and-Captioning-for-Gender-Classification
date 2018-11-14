@@ -13,13 +13,13 @@ class flags(object):
 		self.test_data_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-test-2018-03-20"
 
 		#output file paths
-		self.model_path = "/media/cvrg/HDD/darg/models/en"
+		self.model_path = "/media/cvrg/HDD/darg/models/ar"
 		self.model_name = "en-model-0.001-0.0001-3.ckpt"
-		self.log_path = "/home/darg1/Desktop/logs/logs_rnn_caption_en.txt"
+		self.log_path = "/media/cvrg/HDD/darg/logs/logs_rnn_caption_ar.txt"
 
 		#optimization parameters
-		self.lang = "en"
-		self.model_save_threshold = 0.70
+		self.lang = "ar"
+		self.model_save_threshold = 0.65
 		self.optimize = True #if true below values will be used for hyper parameter optimization, or if testing is run: all the models in model_path will be tested
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
 		self.l_rate = [0.01, 0.001, 0.0001]
@@ -39,12 +39,12 @@ class flags(object):
 			#RNN
 		self.word_embedding_size = 200
 		self.rnn_cell_size = 50
+		
 
 
 
 
-
-		##########################################################################################################################
+	##########################################################################################################################
 		# Training parameters
 		self.use_pretrained_model = False
 		self.tweet_per_user = 100
