@@ -15,7 +15,7 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 	saver = tf.train.Saver(max_to_keep=None)
 
 	with tf.device('/device:GPU:0'):
-		with tf.Session() as sess:
+		with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
 
 			# init variables
 			init = tf.global_variables_initializer()

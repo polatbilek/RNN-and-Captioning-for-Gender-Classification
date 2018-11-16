@@ -15,7 +15,7 @@ class flags(object):
 		#output file paths
 		self.model_path = "/media/cvrg/HDD/darg/models/en"
 		self.model_name = "en-model-0.001-0.0001-3.ckpt"
-		self.log_path = "/home/darg1/Desktop/logs/logs_rnn_caption_en.txt"
+		self.log_path = "/home/cvrg/darg/logs/logs_rnn_caption_en.txt"
 
 		#optimization parameters
 		self.lang = "en"
@@ -47,7 +47,7 @@ class flags(object):
 		##########################################################################################################################
 		# Training parameters
 		self.use_pretrained_model = False
-		self.tweet_per_user = 100
+		self.tweet_per_user = 10
 		self.batch_size = 10
 		self.num_epochs = 25
 		self.evaluate_every = 5
