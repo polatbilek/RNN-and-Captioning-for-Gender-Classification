@@ -157,7 +157,7 @@ def readCaptions(path):
 	
 
 	#read caption file
-	caption_file_name = os.path.join(caption_path, str(FLAGS.lang) + ".txt")
+	caption_file_name = os.path.join(caption_path, str(FLAGS.lang) + "_captions.txt")
 
 	with open(caption_file_name) as f:
 		for line in f:
