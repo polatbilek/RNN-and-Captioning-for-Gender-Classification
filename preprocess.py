@@ -118,6 +118,101 @@ def readData(path):
 
 
 
+
+
+#########################################################################################################################
+# Reads captions of images
+# one-hot vectors: female = [0,1]
+#		           male   = [1,0]
+#
+# input:  string = path to the txt-file corresponding to the training caption data
+# output: list ("sorted_captions")  = List of tweets
+#         list ("sorted_authorname") = List of users
+#	      dict ("target_values") = Author(key) - ground-truth(value) pairs
+#	      list ("seq-lengths")   = Lenght of each tweet in the list "training_set"
+def readCaptions(path):
+	truth_path = os.path.join(os.path.join(path,FLAGS.lang),"text")
+	caption_path = os.path.join(os.path.join(path,FLAGS.lang),"caption")
+
+	tokenizer = TweetTokenizer()
+	captions = []
+	authorname = []
+	target_values = {}
+	seq_lengths = []
+
+	#read truth file
+	truth_file_name = os.path.join(truth_path,"truth.txt")
+	text = open(truth_file_name, 'r')
+
+	# each line = each author
+	for line in text:
+		words = line.strip().split(':::')
+		if words[1] == "female":
+			target_values[words[0]] = [0, 1]
+		elif words[1] == "male":
+			target_values[words[0]] = [1, 0]
+
+	targets = list(target_values.keys())
+	np.random.shuffle(targets)
+	
+
+	#read caption file
+	caption_file_name = os.path.join(caption_path, str(FLAGS.lang) + "_captions.txt")
+
+	with open(caption_file_name) as f:
+		for line in f:
+			pair = line.strip().split(":::")
+			captions.append(pair[1])
+			authorname.append(pair[0])
+	
+	captions = np.array(captions)
+	authorname = np.array(authorname)
+
+	
+	#find and sort the users' captions
+	sorted_captions = []
+	sorted_authorname = []
+
+	for user in targets:
+
+		indices = np.where(authorname == user)[0]
+		caption_count = len(indices)
+		temp_authorname = 0
+
+	
+		for index in indices:
+			tokenized_Caption = tokenizer.tokenize(captions[index])
+			sorted_captions.append(tokenized_Caption)
+			sorted_authorname.append(authorname[index])
+			seq_lengths.append(len(tokenized_Caption))
+			temp_authorname = authorname[index]
+
+		if caption_count < 10:
+			while caption_count != 10:
+				sorted_captions.append("PAD")
+				sorted_authorname.append(temp_authorname)
+				seq_lengths.append(1)
+				caption_count += 1
+
+
+	return sorted_captions, sorted_authorname, target_values, seq_lengths
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #########################################################################################################################
 # Prepares test data
 #

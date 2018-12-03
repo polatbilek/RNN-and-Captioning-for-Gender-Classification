@@ -14,54 +14,55 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 	
 	saver = tf.train.Saver(max_to_keep=None)
 
-	with tf.Session() as sess:
+	with tf.device('/device:GPU:0'):
+		with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
 
-		# init variables
-		init = tf.global_variables_initializer()
-		sess.run(init)
-		sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
-		batch_loss = 0.0
-		batch_accuracy = 0.0
+			# init variables
+			init = tf.global_variables_initializer()
+			sess.run(init)
+			sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
+			batch_loss = 0.0
+			batch_accuracy = 0.0
 
-		#load the model from checkpoint file
-		load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
-		print("Loading the pretrained model from: " + str(load_as))
-		saver.restore(sess, load_as)
+			#load the model from checkpoint file
+			load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
+			print("Loading the pretrained model from: " + str(load_as))
+			saver.restore(sess, load_as)
 
 
-		#start evaluating each batch of test data
-		batch_count = int(len(test_tweets) / (FLAGS.batch_size*FLAGS.tweet_per_user))
+			#start evaluating each batch of test data
+			batch_count = int(len(test_tweets) / (FLAGS.batch_size*FLAGS.tweet_per_user))
 
-		for batch in range(batch_count):
+			for batch in range(batch_count):
 
-			#prepare the batch
-			test_batch_x, test_batch_y, test_batch_seqlen = prepWordBatchData(test_tweets, test_users, target_values, test_seq_lengths, batch)
-			test_batch_x = word2id(test_batch_x, vocabulary)
+				#prepare the batch
+				test_batch_x, test_batch_y, test_batch_seqlen = prepWordBatchData(test_tweets, test_users, target_values, test_seq_lengths, batch)
+				test_batch_x = word2id(test_batch_x, vocabulary)
 
-			#Flatten everything to feed RNN
-			test_batch_x = np.reshape(test_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(test_batch_x)[2]))
-			test_batch_seqlen = np.reshape(test_batch_seqlen, (-1)) # to flatten list, pass [-1] as shape
+				#Flatten everything to feed RNN
+				test_batch_x = np.reshape(test_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(test_batch_x)[2]))
+				test_batch_seqlen = np.reshape(test_batch_seqlen, (-1)) # to flatten list, pass [-1] as shape
 		
-			#run the graph
-			feed_dict = {network.X: test_batch_x, network.Y: test_batch_y, network.sequence_length: test_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
-			loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
+				#run the graph
+				feed_dict = {network.X: test_batch_x, network.Y: test_batch_y, network.sequence_length: test_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
+				loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
-			#calculate the metrics
-			batch_loss += loss
-			batch_accuracy += accuracy
+				#calculate the metrics
+				batch_loss += loss
+				batch_accuracy += accuracy
 
-		#print the accuracy and progress of the validation
-		batch_accuracy /= batch_count
-		print("Test loss: " + "{0:5.4f}".format(batch_loss))
-		print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
+			#print the accuracy and progress of the validation
+			batch_accuracy /= batch_count
+			print("Test loss: " + "{0:5.4f}".format(batch_loss))
+			print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
 
-		if FLAGS.optimize:
-			f = open(FLAGS.log_path, "a")
-			f.write("\n--TESTING STARTED---\n")			
-			f.write("\nwith model:" + load_as + "\n")
-			f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
-			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
-			f.close()
+			if FLAGS.optimize:
+				f = open(FLAGS.log_path, "a")
+				f.write("\n---TESTING STARTED---\n")			
+				f.write("with model:" + load_as + "\n")
+				f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
+				f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
+				f.close()
 
 
 
@@ -87,10 +88,11 @@ if __name__ == "__main__":
 	vocabulary, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
 
 	print("\treading tweets...")
-	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)
+	tweets, users, target_values, seq_lengths = readCaptions(FLAGS.test_data_path)
 	print("\ttest set size: " + str(len(tweets)))
 
-	
+
+	print("---TESTING STARTED---")
 	#finds every model in FLAGS.model_path and runs every single one
 	if FLAGS.optimize == True:
 		models = os.listdir(FLAGS.model_path)
@@ -98,6 +100,12 @@ if __name__ == "__main__":
 			if model.endswith(".ckpt.index"):
 				FLAGS.model_name = model[:-6]
 				tf.reset_default_graph()
+
+				for size in FLAGS.rnn_cell_sizes:
+					if str(size) in FLAGS.model_name:
+						FLAGS.rnn_cell_size = size
+						break
+
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
 	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name

@@ -11,13 +11,14 @@ from eval import *
 ##combines the train and eval into a single script
 if __name__ == "__main__":
 
+
 	print("---PREPROCESSING STARTED---")
 
 	print("\treading word embeddings...")
 	vocabulary, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
 
-	print("\treading tweets...")
-	tweets, users, target_values, seq_lengths = readData(FLAGS.training_data_path)
+	print("\treading captions...")
+	tweets, users, target_values, seq_lengths = readCaptions(FLAGS.training_data_path)
 
 	print("\tconstructing datasets and network...")
 	training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths = partite_dataset(tweets, users, seq_lengths)
@@ -37,36 +38,38 @@ if __name__ == "__main__":
 		train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)
 
 	else:
-		for learning_rate in FLAGS.l_rate:
-			for regularization_param in FLAGS.reg_param:
+		for rnn_cell_size in FLAGS.rnn_cell_sizes:
+			for learning_rate in FLAGS.l_rate:
+				for regularization_param in FLAGS.reg_param:
 
-				#prep the network
-				tf.reset_default_graph()
-				net = network(embeddings)
-				FLAGS.learning_rate = learning_rate
-				FLAGS.l2_reg_lambda = regularization_param
+					#prep the network
+					tf.reset_default_graph()
+					FLAGS.learning_rate = learning_rate
+					FLAGS.l2_reg_lambda = regularization_param
+					FLAGS.rnn_cell_size = rnn_cell_size
+					net = network(embeddings)
 
-				#print specs
-				print("---TRAINING STARTED---")
-				model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", cell size:"
-				model_specs+=  str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size) + ", language:" + FLAGS.lang
-				print(model_specs)
+					#print specs
+					print("---TRAINING STARTED---")
+					model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", cell size:"
+					model_specs+=  str(FLAGS.rnn_cell_size) + ", embedding size:" + str(FLAGS.word_embedding_size) + ", language:" + FLAGS.lang
+					print(model_specs)
 
-				#take the logs
-				f = open(FLAGS.log_path,"a")
-				f.write("---TRAINING STARTED---\n")
-				model_specs += "\n"
-				f.write(model_specs)
-				f.close()
+					#take the logs
+					f = open(FLAGS.log_path,"a")
+					f.write("---TRAINING STARTED---\n")
+					model_specs += "\n"
+					f.write(model_specs)
+					f.close()
 
-				#start training
-				train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)	
+					#start training
+					train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary, embeddings)	
 
 
 
 	print("---TESTING STARTED---")
-	print("\treading tweets for test...")
-	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)
+	print("\treading captions for test...")
+	tweets, users, target_values, seq_lengths = readCaptions(FLAGS.test_data_path)
 	print("\ttest set size: " + str(len(tweets)))
 
 
@@ -77,6 +80,12 @@ if __name__ == "__main__":
 			if model.endswith(".ckpt.index"):
 				FLAGS.model_name = model[:-6]
 				tf.reset_default_graph()
+
+				for size in FLAGS.rnn_cell_sizes:
+					if str(size) in FLAGS.model_name:
+						FLAGS.rnn_cell_size = size
+						break
+
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
 	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
