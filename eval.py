@@ -58,8 +58,8 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 
 			if FLAGS.optimize:
 				f = open(FLAGS.log_path, "a")
-				f.write("\n--TESTING STARTED---\n")			
-				f.write("\nwith model:" + load_as + "\n")
+				f.write("\n---TESTING STARTED---\n")			
+				f.write("with model:" + load_as + "\n")
 				f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
 				f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
 				f.close()
@@ -101,12 +101,10 @@ if __name__ == "__main__":
 				FLAGS.model_name = model[:-6]
 				tf.reset_default_graph()
 
-				if "150" in FLAGS.model_name:
-					FLAGS.rnn_cell_size = 150
-				elif "100" in FLAGS.model_name:
-					FLAGS.rnn_cell_size = 100
-				elif "50" in FLAGS.model_name:
-					FLAGS.rnn_cell_size = 50
+				for size in FLAGS.rnn_cell_sizes:
+					if str(size) in FLAGS.model_name:
+						FLAGS.rnn_cell_size = size
+						break
 
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)

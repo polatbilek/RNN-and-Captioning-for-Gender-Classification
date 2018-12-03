@@ -177,20 +177,22 @@ def readCaptions(path):
 
 		indices = np.where(authorname == user)[0]
 		caption_count = len(indices)
+		temp_authorname = 0
 
+	
 		for index in indices:
 			tokenized_Caption = tokenizer.tokenize(captions[index])
 			sorted_captions.append(tokenized_Caption)
 			sorted_authorname.append(authorname[index])
 			seq_lengths.append(len(tokenized_Caption))
+			temp_authorname = authorname[index]
 
 		if caption_count < 10:
 			while caption_count != 10:
 				sorted_captions.append("PAD")
-				sorted_authorname.append(authorname[index])
+				sorted_authorname.append(temp_authorname)
 				seq_lengths.append(1)
 				caption_count += 1
-
 
 
 	return sorted_captions, sorted_authorname, target_values, seq_lengths

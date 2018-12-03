@@ -121,7 +121,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				#save the model if it performs above the threshold
 				#naming convention for the model : {"language"}-model-{"learning rate"}-{"reg. param."}-{"epoch number"}
 				if batch_accuracy >= FLAGS.model_save_threshold:
-					model_name = str(FLAGS.lang) + "-model-" + str(FLAGS.learning_rate) + "-" + str(FLAGS.l2_reg_lambda) + "-" + str(epoch) + ".ckpt"
+					model_name = str(FLAGS.lang) + "-model-" + str(FLAGS.rnn_cell_size) + "-" + str(FLAGS.learning_rate) + "-" + str(FLAGS.l2_reg_lambda) + "-" + str(epoch) + ".ckpt"
 					save_as = os.path.join(FLAGS.model_path, model_name)
 					save_path = saver.save(sess, save_as)
 					print("Model saved in path: %s" % save_path)

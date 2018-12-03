@@ -237,7 +237,4 @@ class network(object):
 			self.h_pool = tf.concat(pooled_outputs, 3)
 			self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
 
-			return self.h_pool_flat
-
-
-
+		return self.h_pool_flat
