@@ -7,7 +7,7 @@ class network(object):
 
 
 	############################################################################################################################
-	def __init__(self, embeddings):
+	def __init__(self):
 		with tf.device('/device:GPU:0'):
 
 			# placeholders

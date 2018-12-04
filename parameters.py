@@ -3,7 +3,6 @@ class flags(object):
 	def __init__(self):
 
 		#set sizes
-		self.test_set_size = 0.0
 		self.validation_set_size = 0.2
 		self.training_set_size = 0.8
 
@@ -26,7 +25,7 @@ class flags(object):
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
 		self.l_rate = [0.01, 0.001, 0.0001]
 		self.reg_param = [0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]
-		#self.fc_size = [150, 100, 50] will be used later
+		self.fc_sizes = [100] #it is dummy for now: will be used later
 
 
 		#########################################################################################################################
@@ -34,11 +33,12 @@ class flags(object):
 		self.l2_reg_lambda = 0.0001
 		self.learning_rate = 0.001
 		self.num_classes = 2
+
 		self.textrnn_size = 300 #vector sizes
 		self.textcnn_size = 300
 		self.imagernn_size = 50
 
-
+		self.fc_size = 100 #fully connected layer size
 
 
 		##########################################################################################################################

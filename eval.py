@@ -10,7 +10,7 @@ from model import network
 #####################################################################################################################
 ##loads a model and tests it
 #####################################################################################################################
-def test(network, test_tweets, test_users, test_seq_lengths, target_values, vocabulary, embeddings):
+def test(network, textrnn_vectors, textcnn_vectors, imagernn_vectors, users, target_values):
 	
 	saver = tf.train.Saver(max_to_keep=None)
 
@@ -20,7 +20,6 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 			# init variables
 			init = tf.global_variables_initializer()
 			sess.run(init)
-			sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
 			batch_loss = 0.0
 			batch_accuracy = 0.0
 
@@ -31,21 +30,19 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 
 
 			#start evaluating each batch of test data
-			batch_count = int(len(test_tweets) / (FLAGS.batch_size*FLAGS.tweet_per_user))
+			batch_count = int(len(textrnn_vectors) / FLAGS.batch_size)
 
 			for batch in range(batch_count):
 
 				#prepare the batch
-				test_batch_x, test_batch_y, test_batch_seqlen = prepWordBatchData(test_tweets, test_users, target_values, test_seq_lengths, batch)
-				test_batch_x = word2id(test_batch_x, vocabulary)
+				test_batch_textrnn, test_batch_textcnn, test_batch_imagernn, test_batch_y = prepWordBatchData(textrnn_vectors, textcnn_vectors, imagernn_vectors, test_users, target_values, batch)
 
-				#Flatten everything to feed RNN
-				test_batch_x = np.reshape(test_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(test_batch_x)[2]))
-				test_batch_seqlen = np.reshape(test_batch_seqlen, (-1)) # to flatten list, pass [-1] as shape
 		
 				#run the graph
-				feed_dict = {network.X: test_batch_x, network.Y: test_batch_y, network.sequence_length: test_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
+				feed_dict = {network.textrnn_input: test_batch_textcnn, network.textcnn_input: test_batch_imagernn,network.imagernn_input: test_batch_textrnn, \
+								network.Y: test_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
 				loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
+
 
 				#calculate the metrics
 				batch_loss += loss
@@ -84,13 +81,9 @@ if __name__ == "__main__":
 
 	print("---PREPROCESSING STARTED---")
 
-	print("\treading word embeddings...")
-	vocabulary, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
-
-	print("\treading tweets...")
-	tweets, users, target_values, seq_lengths = readCaptions(FLAGS.test_data_path)
+	print("\treading vectors for test...")
+	textrnn_vectors, textcnn_vectors, imagernn_Vectors, users, target_values = readVectors(FLAGS.test_data_path)
 	print("\ttest set size: " + str(len(tweets)))
-
 
 	print("---TESTING STARTED---")
 	#finds every model in FLAGS.model_path and runs every single one
@@ -101,18 +94,18 @@ if __name__ == "__main__":
 				FLAGS.model_name = model[:-6]
 				tf.reset_default_graph()
 
-				for size in FLAGS.rnn_cell_sizes:
+				for size in FLAGS.fc_sizes:
 					if str(size) in FLAGS.model_name:
-						FLAGS.rnn_cell_size = size
+						FLAGS.fc_size = size
 						break
 
-				net = network(embeddings)
-				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
+				net = network()
+				test(net, textrnn_vectors, textcnn_vectors, imagernn_Vectors, users, target_values)
 	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
 	else:
 		tf.reset_default_graph()
-		net = network(embeddings)
-		test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
+		net = network()
+		test(net, textrnn_vectors, textcnn_vectors, imagernn_Vectors, users, target_values)
 
 
 
