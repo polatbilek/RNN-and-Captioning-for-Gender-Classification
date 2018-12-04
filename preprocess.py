@@ -201,15 +201,142 @@ def readCaptions(path):
 
 
 
+#########################################################################################################################
+# Reads vectors of trained models
+#
+# input:  string(path) = path to the folder that contains the vector files in below format
+# format -->   userID:::vector:::truth_value (values in the vector are comma seperated)
+#
+# output: list(rnn_data) - Vectors of rnn with corrisponding indexes of users
+#         list(cnn_data) - Vectors of cnn with corrisponding indexes of users
+#         list(image_data) - Vectors of image model with corrisponding indexes of users
+#         list(users) - List of usernames
+#         list(target_values) - List of target values with corrisponding indexes of users
+def readVectors(path):
+	rnn_data = []
+	users = []
+	target_values = []
+
+	for vector_file in os.listdir(path):
+		if "rnn" in vector_file:
+			file_handler = open(os.path.join(path,vector_file),"r")
+			
+			for line in file_handler:
+				seperated = line.strip().split(":::")
+
+				users.append(seperated[0]) #add user to user list
+
+				vector_list = [] 
+				for value in seperated[1].split(","): #add vector to rnn_data
+					vector_list.append(float(value))
+				rnn_data.append(vector_list)
+
+				target_values.append([int(seperated[2].split(",")[0]), int(seperated[2].split(",")[1])]) #target values extraction
+				
+
+			file_handler.close()
+
+	cnn_data = [i for i in range(len(rnn_data))]
+	image_data = [i for i in range(len(rnn_data))]
+
+	for vector_file in os.listdir(path):
+		if "rnn" not in vector_file:
+			file_handler = open(os.path.join(path,vector_file),"r")
+
+			for line in file_handler:
+				seperated = line.strip().split(":::")
+
+				vector_list = []
+				for value in seperated[1].split(","):
+					vector_list.append(float(value))	
+				
+				index = users.index(seperated[0])
+				if "cnn" in vector_file:
+					cnn_data[index] = vector_list
+				else:
+					image_data[index] = vector_list
+
+			file_handler.close()
+
+
+	return rnn_data, cnn_data, image_data, users, target_values
 
 
 
+#########################################################################################################################
+# Shuffles dataset and partites it into 2 part training, validation
+#
+# input: list (rnn_vectors)  - List of rnn vectors corrisponding to the username indexes
+#	     list (cnn_vectors)   - List of cnn vectors corrisponding to the username indexes
+#	     list (image_vectors) - List of image model vectors corrisponding to the username indexes
+#            list (users) - List of usernames
+#
+# output: too long, the return line can easily be understood i suppose
+def partite_dataset_vectors(rnn_vectors, cnn_vectors, image_vectors, users):
+
+	c = list(zip(rnn_vectors, cnn_vectors, image_vectors, users))
+	random.shuffle(c)
+	rnn_vectors, cnn_vectors, image_vectors, users = zip(*c)
+
+	rnn_vectors = list(tweet_batches)
+	cnn_vectors = list(target_values)
+	image_vectors = list(seqlen_batches)
+	users = list(users)
+
+	training_set_size = int(len(users) * FLAGS.training_set_size)
+
+	training_rnn_vectors = rnn_vectors[:training_set_size]
+	valid_rnn_vectors = rnn_vectors[training_set_size:]
+
+	training_cnn_vectors = cnn_vectors[:training_set_size]
+	valid_cnn_vectors = cnn_vectors[training_set_size:]
+
+	training_image_vectors = image_vectors[:training_set_size]
+	valid_image_vectors = image_vectors[training_set_size:]
+
+	training_users = users[:training_set_size]
+	valid_users = users[training_set_size:]
+				
+
+	return training_rnn_vectors, training_cnn_vectors, training_image_vectors, training_users, valid_rnn_vectors, valid_cnn_vectors, valid_image_vectors, valid_users
 
 
 
+#########################################################################################################################
+# Prepares batch for vectors and shuffles the batch
+#
+# input:     list (rnn_vectors)  - Vectors of RNN model
+#	     list (cnn_vectors)   - Vectors of CNN model
+#	     list (image_vectors) - Vectors from image model with corrisponding order in username list
+#            list (users) - The usernames
+#	     list (target_values) - Ground-truth gender vector of each owner
+#	     int  (batch_index) - Current # of iteration we are on
+#
+# output:     list (batch_rnn_vectors)  - rnn vectors for this batch
+# 	      list (batch_cnn_vectors)  - cnn vectors for this batch
+#	      list (batch_image_vectors)  - image vectors for this batch
+#             list (batch_users)  - The usernames for this specific batch
+#             list (batch_targets)  - Corrisponding target values of users for this batch
+def prepVectorBatchData(rnn_vectors, cnn_vectors, image_vectors, users, target_values, batch_index):
 
+	start = FLAGS.batch_size * batch_index
+	end = FLAGS.batch_size * batch_index + FLAGS.batch_size
 
+	if end > len(users):
+		end = len(users)
 
+	batch_rnn_vectors = rnn_vectors[start:end]
+	batch_cnn_vectors = cnn_vectors[start:end]
+	batch_image_vectors = image_vectors[start:end]
+	batch_users = users[start:end]
+	batch_targets = user2target(batch_users, targets)
+
+	
+	c = list(zip(batch_rnn_vectors, batch_cnn_vectors, batch_image_vectors, batch_users, batch_targets))
+	random.shuffle(c)
+	batch_rnn_vectors, batch_cnn_vectors, batch_image_vectors, batch_users, batch_targets = zip(*c)	
+
+	return batch_rnn_vectors, batch_cnn_vectors, batch_image_vectors, batch_users, batch_targets
 
 
 

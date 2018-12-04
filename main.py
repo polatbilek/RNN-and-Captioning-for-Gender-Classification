@@ -15,11 +15,11 @@ if __name__ == "__main__":
 	print("---PREPROCESSING STARTED---")
 
 	print("\treading vectors...")
-	textrnn_vectors, textcnn_vectors, imagernn_Vectors, users, target_values = readVectors(FLAGS.training_data_path)
+	textrnn_vectors, textcnn_vectors, imagernn_vectors, users, target_values = readVectors(FLAGS.training_data_path)
 
 	print("\tconstructing datasets and network...")
 	training_textrnn_vectors, training_textcnn_vectors, training_imagernn_vectors, training_users, \
-	valid_textrnn_vectors, valid_textcnn_vectors, valid_imagernn_vectors, valid_users = partite_dataset_vectors(textrnn_vectors, textcnn_vectors, imagernn_Vectors, users)
+	valid_textrnn_vectors, valid_textcnn_vectors, valid_imagernn_vectors, valid_users = partite_dataset_vectors(textrnn_vectors, textcnn_vectors, imagernn_vectors, users)
 
 
 	#hyperparameter optimization if it is set

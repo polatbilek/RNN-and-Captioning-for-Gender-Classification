@@ -44,7 +44,7 @@ def train(network, training_textrnn_vectors, training_textcnn_vectors, training_
 				for batch in range(training_batch_count):
 					#prepare the batch
 					training_batch_textrnn, training_batch_textcnn, training_batch_imagernn, training_batch_y = \
-											prepWordBatchData(training_textrnn_vectors, training_textcnn_vectors, training_imagernn_vectors, training_users, target_values, batch)
+											prepVectorBatchData(training_textrnn_vectors, training_textcnn_vectors, training_imagernn_vectors, training_users, target_values, batch)
 
 
 					#run the graph
