@@ -37,39 +37,37 @@ if __name__ == "__main__":
 		     valid_textrnn_vectors, valid_textcnn_vectors, valid_imagernn_vectors, valid_users, target_values)
 
 	else:
-		for fullyconnected_size in FLAGS.fc_sizes:
-			for learning_rate in FLAGS.l_rate:
-				for regularization_param in FLAGS.reg_param:
+		for learning_rate in FLAGS.l_rate:
+			for regularization_param in FLAGS.reg_param:
 
-					#prep the network
-					tf.reset_default_graph()
-					FLAGS.learning_rate = learning_rate
-					FLAGS.l2_reg_lambda = regularization_param
-					FLAGS.fc_size = fullyconnected_size
-					net = network()
+				#prep the network
+				tf.reset_default_graph()
+				FLAGS.learning_rate = learning_rate
+				FLAGS.l2_reg_lambda = regularization_param
+				net = network()
 
-					#print specs
-					print("---TRAINING STARTED---")
-					model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", fully connected size:"
-					model_specs+=  str(FLAGS.fc_size) + ", language:" + FLAGS.lang					
-					print(model_specs)
+				#print specs
+				print("---TRAINING STARTED---")
+				model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", fully connected size:"
+				model_specs+=  str(FLAGS.fc_size) + ", language:" + FLAGS.lang					
+				print(model_specs)
 
-					#take the logs
-					f = open(FLAGS.log_path,"a")
-					f.write("---TRAINING STARTED---\n")
-					model_specs += "\n"
-					f.write(model_specs)
-					f.close()
+				#take the logs
+				f = open(FLAGS.log_path,"a")
+				f.write("---TRAINING STARTED---\n")
+				model_specs += "\n"
+				f.write(model_specs)
+				f.close()
 
-					#start training
-					train(net, training_textrnn_vectors, training_textcnn_vectors, training_imagernn_vectors, training_users, \
-		     			  valid_textrnn_vectors, valid_textcnn_vectors, valid_imagernn_vectors, valid_users, target_values)
+				#start training
+				train(net, training_textrnn_vectors, training_textcnn_vectors, training_imagernn_vectors, training_users, \
+	     			  valid_textrnn_vectors, valid_textcnn_vectors, valid_imagernn_vectors, valid_users, target_values)
 
 
 	print("---TESTING STARTED---")
 	print("\treading vectors for test...")
 	textrnn_vectors, textcnn_vectors, imagernn_Vectors, users, target_values = readVectors(FLAGS.test_data_path)
-	print("\ttest set size: " + str(len(tweets)))
+	print("\ttest set size: " + str(len(textrnn_vectors)))
 
 
 	#finds every model in FLAGS.model_path and runs every single one

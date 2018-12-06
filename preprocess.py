@@ -215,7 +215,7 @@ def readCaptions(path):
 def readVectors(path):
 	rnn_data = []
 	users = []
-	target_values = []
+	target_values = {}
 
 	for vector_file in os.listdir(path):
 		if "rnn" in vector_file:
@@ -231,7 +231,7 @@ def readVectors(path):
 					vector_list.append(float(value))
 				rnn_data.append(vector_list)
 
-				target_values.append([int(seperated[2].split(",")[0]), int(seperated[2].split(",")[1])]) #target values extraction
+				target_values[seperated[0]] = [int(seperated[2].split(",")[0]), int(seperated[2].split(",")[1])] #target values extraction
 				
 
 			file_handler.close()
@@ -278,9 +278,9 @@ def partite_dataset_vectors(rnn_vectors, cnn_vectors, image_vectors, users):
 	random.shuffle(c)
 	rnn_vectors, cnn_vectors, image_vectors, users = zip(*c)
 
-	rnn_vectors = list(tweet_batches)
-	cnn_vectors = list(target_values)
-	image_vectors = list(seqlen_batches)
+	rnn_vectors = list(rnn_vectors)
+	cnn_vectors = list(cnn_vectors)
+	image_vectors = list(image_vectors)
 	users = list(users)
 
 	training_set_size = int(len(users) * FLAGS.training_set_size)
@@ -329,7 +329,7 @@ def prepVectorBatchData(rnn_vectors, cnn_vectors, image_vectors, users, target_v
 	batch_cnn_vectors = cnn_vectors[start:end]
 	batch_image_vectors = image_vectors[start:end]
 	batch_users = users[start:end]
-	batch_targets = user2target(batch_users, targets)
+	batch_targets = user2target(batch_users, target_values)
 
 	
 	c = list(zip(batch_rnn_vectors, batch_cnn_vectors, batch_image_vectors, batch_users, batch_targets))

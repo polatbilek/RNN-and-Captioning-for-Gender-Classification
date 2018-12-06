@@ -14,52 +14,52 @@ def test(network, textrnn_vectors, textcnn_vectors, imagernn_vectors, users, tar
 	
 	saver = tf.train.Saver(max_to_keep=None)
 
-	with tf.device('/device:GPU:0'):
-		with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
+	with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
 
-			# init variables
-			init = tf.global_variables_initializer()
-			sess.run(init)
-			batch_loss = 0.0
-			batch_accuracy = 0.0
+		# init variables
+		init = tf.global_variables_initializer()
+		sess.run(init)
+		batch_loss = 0.0
+		batch_accuracy = 0.0
 
-			#load the model from checkpoint file
-			load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
-			print("Loading the pretrained model from: " + str(load_as))
-			saver.restore(sess, load_as)
-
-
-			#start evaluating each batch of test data
-			batch_count = int(len(textrnn_vectors) / FLAGS.batch_size)
-
-			for batch in range(batch_count):
-
-				#prepare the batch
-				test_batch_textrnn, test_batch_textcnn, test_batch_imagernn, test_batch_y = prepWordBatchData(textrnn_vectors, textcnn_vectors, imagernn_vectors, test_users, target_values, batch)
-
-		
-				#run the graph
-				feed_dict = {network.textrnn_input: test_batch_textcnn, network.textcnn_input: test_batch_imagernn,network.imagernn_input: test_batch_textrnn, \
-								network.Y: test_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
-				loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
+		#load the model from checkpoint file
+		load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
+		print("Loading the pretrained model from: " + str(load_as))
+		saver.restore(sess, load_as)
 
 
-				#calculate the metrics
-				batch_loss += loss
-				batch_accuracy += accuracy
+		#start evaluating each batch of test data
+		batch_count = int(len(textrnn_vectors) / FLAGS.batch_size)
 
-			#print the accuracy and progress of the validation
-			batch_accuracy /= batch_count
-			print("Test loss: " + "{0:5.4f}".format(batch_loss))
-			print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
+		for batch in range(batch_count):
 
-			if FLAGS.optimize:
-				f = open(FLAGS.log_path, "a")
-				f.write("\n---TESTING STARTED---\n")			
-				f.write("with model:" + load_as + "\n")
-				f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
-				f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
-				f.close()
+			#prepare the batch
+			test_batch_textrnn, test_batch_textcnn, test_batch_imagernn, test_batch_users, test_batch_y \
+						= prepVectorBatchData(textrnn_vectors, textcnn_vectors, imagernn_vectors, test_users, target_values, batch)
+
+	
+			#run the graph
+			feed_dict = {network.textrnn_input: test_batch_textcnn, network.textcnn_input: test_batch_imagernn,network.imagernn_input: test_batch_textrnn, \
+							network.Y: test_batch_y, network.reg_param: FLAGS.l2_reg_lambda}
+			loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
+
+
+			#calculate the metrics
+			batch_loss += loss
+			batch_accuracy += accuracy
+
+		#print the accuracy and progress of the validation
+		batch_accuracy /= batch_count
+		print("Test loss: " + "{0:5.4f}".format(batch_loss))
+		print("Test accuracy: " + "{0:0.5f}".format(batch_accuracy))
+
+		if FLAGS.optimize:
+			f = open(FLAGS.log_path, "a")
+			f.write("\n---TESTING STARTED---\n")			
+			f.write("with model:" + load_as + "\n")
+			f.write("Test loss: " + "{0:5.4f}".format(batch_loss) + "\n")
+			f.write("Test accuracy: " + "{0:0.5f}".format(batch_accuracy) + "\n")
+			f.close()
 
 
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
 	print("\treading vectors for test...")
 	textrnn_vectors, textcnn_vectors, imagernn_Vectors, users, target_values = readVectors(FLAGS.test_data_path)
-	print("\ttest set size: " + str(len(tweets)))
+	print("\ttest set size: " + str(len(textrnn_vectors)))
 
 	print("---TESTING STARTED---")
 	#finds every model in FLAGS.model_path and runs every single one
