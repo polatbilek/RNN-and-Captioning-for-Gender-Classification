@@ -81,10 +81,9 @@ if __name__ == "__main__":
 				FLAGS.model_name = model[:-6]
 				tf.reset_default_graph()
 
-				for size in FLAGS.rnn_cell_sizes:
-					if str(size) in FLAGS.model_name:
-						FLAGS.rnn_cell_size = size
-						break
+				#set rnn size from model name
+				model_tokens = FLAGS.model_name.strip().split("-")
+				FLAGS.rnn_cell_size = int(model_tokens[2])
 
 				net = network(embeddings)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary, embeddings)
