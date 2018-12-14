@@ -26,7 +26,7 @@ class flags(object):
 		self.optimize = True #if true below values will be used for hyper parameter optimization, or if testing is run: all the models in model_path will be tested
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
 		self.l_rate = [0.01]
-		self.reg_param = [0.00005, 0.00001, 0.000005, 0.000001]
+		self.reg_param = [0.001, 0.005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]
 
 
 

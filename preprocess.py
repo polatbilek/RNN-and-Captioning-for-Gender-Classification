@@ -61,6 +61,45 @@ def readGloveEmbeddings(path, embedding_size):
 
 
 
+
+
+#########################################################################################################################
+# Read GloVe embeddings
+#
+# input: String (path)        - Path of embeddings to read
+#        int (embedding_size) - Size of the embeddings
+#
+# output: dict (vocab)             - Dictionary of the vocabulary in char embeddings
+#         numpy array (embeddings) - Embeddings of the words in char embeddings
+def readCharEmbeddings(path, embedding_size):
+    in_file = gensim.models.word2vec.LineSentence(path)
+
+    lines = lambda: itertools.islice(in_file, None)
+
+    model_tuple = lambda: ((line[0], [float(value) for value in line[1:]]) for line in lines())
+    model_dict = dict(model_tuple())
+
+    char_list = [int(char_number) for char_number in model_dict.keys() if len(model_dict[char_number]) == embedding_size]
+    vectors = [embed for embed in model_dict.values() if len(embed) == embedding_size]
+
+    char_list.append(ord('U'))
+    vectors.append(np.random.randn(embedding_size))
+    char_list.append(ord('P'))
+    vectors.append(np.zeros(embedding_size))
+
+    char_vocabulary = {}
+
+    for i in range(len(char_list)):
+        char_vocabulary[char_list[i]] = i
+
+    return char_vocabulary, np.array(vectors)
+
+
+
+
+
+
+
 #########################################################################################################################
 # Reads training dataset
 # one-hot vectors: female = [0,1]
@@ -196,6 +235,9 @@ def readCaptions(path):
 
 
 	return sorted_captions, sorted_authorname, target_values, seq_lengths
+
+
+
 
 
 
@@ -425,6 +467,35 @@ def word2id(tweets, vocab):
 
 
 
+#########################################################################################################################
+# Changes tokenized words to their corresponding ids in vocabulary
+# Works on user level batch system
+#
+# input: list (tweets) - List of tweets
+#        dict (vocab)  - Dictionary of the vocabulary of char embeddings
+#
+# output: list (batch_tweet_ids) - List of corresponding ids of words in the tweet w.r.t. vocabulary
+def char2id(tweets, char_list):
+    batch_tweet_ids = []
+    for user in tweets:
+        user_tweets = []
+        for tweet in user:
+            tweet_ids = []
+            for word in tweet:
+                for char in word:
+                    if char != 'P':
+                        char = char.lower()
+                    try:
+                        tweet_ids.append(char_list[ord(char)])
+                    except:
+                        tweet_ids.append(char_list[ord('U')])
+            user_tweets.append(tweet_ids)
+        batch_tweet_ids.append(user_tweets)
+    return batch_tweet_ids
+
+
+
+
 
 #########################################################################################################################
 # Prepares batch data, also adds padding to tweets
@@ -529,10 +600,12 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 		target_values.append(target_batches[i][0]) 
 	target_batches = np.reshape(np.asarray(target_values), (FLAGS.batch_size, 2)).tolist()
 
+	'''
 	#user level shuffling
 	c = list(zip(tweet_batches, target_batches, seqlen_batches))
 	random.shuffle(c)
 	tweet_batches, target_batches, seqlen_batches = zip(*c)
+	'''
 
 	tweet_batches = list(tweet_batches)
 	target_values = list(target_values)
@@ -548,6 +621,73 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 	seqlen_batches = list(seqlen_batches)
 
 	return tweet_batches, target_batches, seqlen_batches
+
+
+
+
+
+
+
+
+def prepCharBatchData(tweets, users, targets, iter_no):
+    numof_total_tweet = FLAGS.batch_size * FLAGS.tweet_per_user
+
+    start = iter_no * numof_total_tweet
+    end = iter_no * numof_total_tweet + numof_total_tweet
+
+    if end > len(tweets):
+        end = len(tweets)
+
+    batch_tweets = tweets[start:end]
+    batch_users = users[start:end]
+
+    batch_output = user2target(batch_users, targets)
+
+    batch_input = list()
+
+    for tweet in batch_tweets:
+        tweet_char_list = list()
+        for word in tweet:
+            tweet_char_list.extend([char for char in word.lower()])
+
+        size = len(tweet_char_list)
+        if size < FLAGS.sequence_length:
+            for i in range(FLAGS.sequence_length - size):
+                tweet_char_list.append('P')
+
+        batch_input.append(tweet_char_list)
+
+    # reshape the input for shuffling operation
+    tweet_batches = np.reshape(np.asarray(batch_input),(FLAGS.batch_size, FLAGS.tweet_per_user, FLAGS.sequence_length)).tolist()
+    target_batches = np.reshape(np.asarray(batch_output), (FLAGS.batch_size, FLAGS.tweet_per_user, 2)).tolist()
+
+    # prepare the target values
+    target_values = []
+    for i in range(len(target_batches)):
+        target_values.append(target_batches[i][0])
+    target_batches = np.reshape(np.asarray(target_values), (FLAGS.batch_size, 2)).tolist()
+
+    '''
+    # user level shuffling
+    c = list(zip(tweet_batches, target_batches))
+    random.shuffle(c)
+    tweet_batches, target_batches = zip(*c)
+    '''
+
+    tweet_batches = list(tweet_batches)
+
+    # tweet level shuffling
+    for i in range(FLAGS.batch_size):
+        c = list(zip(tweet_batches[i]))
+        random.shuffle(c)
+        tweet_batches[i] = zip(*c)
+
+    tweet_batches = list(tweet_batches)
+    target_batches = list(target_batches)
+
+    return tweet_batches, target_batches
+
+
 
 
 

@@ -10,7 +10,7 @@ from model import network
 #####################################################################################################################
 ##loads a model and tests it
 #####################################################################################################################
-def	test(net, tweets, users, seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word):
+def test(network, test_tweets, test_users, test_seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word):
 	
 	saver = tf.train.Saver(max_to_keep=None)
 
@@ -44,19 +44,19 @@ def	test(net, tweets, users, seq_lengths, target_values, vocabulary_word, vocabu
 				test_batch_x_cnn = char2id(test_batch_x_cnn, vocabulary_char)
 
 
-					#Flatten everything to feed RNN
+				#Flatten everything to feed RNN
 				test_batch_x_rnn = np.reshape(test_batch_x_rnn, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(test_batch_x_rnn)[2]))
 				test_batch_seqlen = np.reshape(test_batch_seqlen, (-1)) # to flatten list, pass [-1] as shape
 
-					#Flatten everything to feed CNN
+				#Flatten everything to feed CNN
 				test_batch_x_cnn = np.reshape(test_batch_x_cnn, (FLAGS.batch_size*FLAGS.tweet_per_user, FLAGS.sequence_length))
 
 
 
 				#run the graph
-				feed_dict = {network.input_x: test_batch_x_cnn,\ #cnn placeholders
-							 network.X: test_batch_x_rnn, network.sequence_length: test_batch_seqlen,\ #rnn placeholder
-							 network.input_y: test_batch_y_rnn, network.reg_param: FLAGS.l2_reg_lambda} #other placeholders
+				feed_dict = {network.input_x: test_batch_x_cnn,\
+							 network.X: test_batch_x_rnn, network.sequence_length: test_batch_seqlen,\
+							 network.Y: test_batch_y_rnn, network.reg_param: FLAGS.l2_reg_lambda}
 
 				loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
@@ -99,10 +99,10 @@ if __name__ == "__main__":
 	print("---PREPROCESSING STARTED---")
 
 	print("\treading word embeddings...")
-	vocabulary_word, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
+	vocabulary_word, embeddings_word = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
 
 	print("\treading char embeddings...")
-	vocabulary_char, embeddings = readCharEmbeddings(FLAGS.char_embed_path, FLAGS.char_embedding_size)
+	vocabulary_char, embeddings_char = readCharEmbeddings(FLAGS.char_embed_path, FLAGS.char_embedding_size)
 
 	print("\treading tweets for test...")
 	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)

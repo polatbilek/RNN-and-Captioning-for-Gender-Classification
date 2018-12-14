@@ -43,18 +43,24 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				for batch in range(training_batch_count):
 
 					#prepare the batch
+					training_batch_x_rnn, training_batch_y_rnn, training_batch_seqlen = prepWordBatchData(training_tweets, training_users, target_values, training_seq_lengths, batch)
+					training_batch_x_rnn = word2id(training_batch_x_rnn, vocabulary_word)
+
 					training_batch_x_cnn, training_batch_y_cnn = prepCharBatchData(training_tweets, training_users, target_values, batch)					
 					training_batch_x_cnn = char2id(training_batch_x_cnn, vocabulary_char)
 
+					#Flatten everything to feed RNN
+					training_batch_x_rnn = np.reshape(training_batch_x_rnn, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(training_batch_x_rnn)[2]))
+					training_batch_seqlen = np.reshape(training_batch_seqlen, (-1)) # to flatten list, pass [-1] as shape
 
-						#Flatten everything to feed CNN
+					#Flatten everything to feed CNN
 					training_batch_x_cnn = np.reshape(training_batch_x_cnn, (FLAGS.batch_size*FLAGS.tweet_per_user, FLAGS.sequence_length))
 
 
 					#run the graph
-					feed_dict = {network.input_x: test_batch_x_cnn,\ #cnn placeholders
-							 	network.X: test_batch_x_rnn, network.sequence_length: test_batch_seqlen,\ #rnn placeholder
-							 	network.input_y: test_batch_y_rnn, network.reg_param: FLAGS.l2_reg_lambda} #other placeholders
+					feed_dict = {network.input_x: training_batch_x_cnn,\
+							 	network.X: training_batch_x_rnn, network.sequence_length: training_batch_seqlen,\
+							 	network.Y: training_batch_y_rnn, network.reg_param: FLAGS.l2_reg_lambda}
 
 					_, loss, prediction, accuracy = sess.run([network.train, network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
@@ -84,18 +90,24 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				for batch in range(valid_batch_count):
 
 					#prepare the batch
+					valid_batch_x_rnn, valid_batch_y_rnn, valid_batch_seqlen = prepWordBatchData(valid_tweets, valid_users, target_values, valid_seq_lengths, batch)
+					valid_batch_x_rnn = word2id(valid_batch_x_rnn, vocabulary_word)
+
 					valid_batch_x_cnn, valid_batch_y = prepCharBatchData(valid_tweets, valid_users, target_values, batch)
 					valid_batch_x_cnn = char2id(valid_batch_x_cnn, vocabulary_char)
 
+					#Flatten everything to feed RNN
+					valid_batch_x_rnn = np.reshape(valid_batch_x_rnn, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(valid_batch_x_rnn)[2]))
+					valid_batch_seqlen = np.reshape(valid_batch_seqlen, (-1)) # to flatten list, pass [-1] as shape
 
 					#Flatten everything to feed CNN
 					valid_batch_x_cnn = np.reshape(valid_batch_x_cnn, (FLAGS.batch_size*FLAGS.tweet_per_user, FLAGS.sequence_length))
 
 
 					#run the graph
-					feed_dict = {network.input_x: test_batch_x_cnn,\ #cnn placeholders
-							 network.X: test_batch_x_rnn, network.sequence_length: test_batch_seqlen,\ #rnn placeholder
-							 network.input_y: test_batch_y_rnn, network.reg_param: FLAGS.l2_reg_lambda} #other placeholders
+					feed_dict = {network.input_x: valid_batch_x_cnn,\
+							 network.X: valid_batch_x_rnn, network.sequence_length: valid_batch_seqlen,\
+							 network.Y: valid_batch_y_rnn, network.reg_param: FLAGS.l2_reg_lambda}
 
 					loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 

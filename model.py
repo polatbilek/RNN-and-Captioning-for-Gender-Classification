@@ -30,7 +30,7 @@ class network(object):
 			total_tweets = FLAGS.batch_size * FLAGS.tweet_per_user
 
 			# weigths
-			self.weights = {'fc1': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size + num_of_total_filters, FLAGS.num_classes]), name="fc1-weights")
+			self.weights = {'fc1': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size + num_of_total_filters, FLAGS.num_classes]), name="fc1-weights"),
 					'att1-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att1-weights"), #rnn word level
 					'att1-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att1-vector"),							  #rnn word level
 					'att2-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att2-weights"), #rnn user level
@@ -125,11 +125,12 @@ class network(object):
 ############################################################################################################################
 	def rnn_with_attention(self):
 
-		#rnn placeholders
-		self.X = tf.placeholder(tf.int32, [FLAGS.batch_size*FLAGS.tweet_per_user, None])
-		self.sequence_length = tf.placeholder(tf.int32, [FLAGS.batch_size*FLAGS.tweet_per_user])
-
 		with tf.device('/device:GPU:0'):
+
+			#rnn placeholders
+			self.X = tf.placeholder(tf.int32, [FLAGS.batch_size*FLAGS.tweet_per_user, None])
+			self.sequence_length = tf.placeholder(tf.int32, [FLAGS.batch_size*FLAGS.tweet_per_user])
+
 			# embedding layer
 			self.rnn_input = tf.nn.embedding_lookup(self.tf_embeddings, self.X)
 

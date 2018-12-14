@@ -24,8 +24,7 @@ if __name__ == "__main__":
 	tweets, users, target_values, seq_lengths = readData(FLAGS.training_data_path)
 
 	print("\tconstructing datasets and network...")
-	training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, _, _, _ = partite_dataset(tweets, users, seq_lengths)
-
+	training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, test_tweets, test_users, test_seq_lengths = partite_dataset(tweets, users, seq_lengths)
 
 	#hyperparameter optimization if it is set
 	if FLAGS.optimize == False:
@@ -70,7 +69,7 @@ if __name__ == "__main__":
 
 
 	print("---TESTING STARTED---")
-	print("\treading vectors for test...")
+	print("\treading tweets for test...")
 	tweets, users, target_values, seq_lengths = readData(FLAGS.test_data_path)
 	print("\ttest set size: " + str(len(tweets)))
 
@@ -83,12 +82,12 @@ if __name__ == "__main__":
 				FLAGS.model_name = model[:-6]
 				tf.reset_default_graph()
 				net = network(embeddings_char, embeddings_word)
-				test(net, tweets, users, seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
+				test(net, test_tweets, test_users, test_seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
 	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
 	else:
 		tf.reset_default_graph()
 		net = network(embeddings_char, embeddings_word)
-		test(net, tweets, users, seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
+		test(net, test_tweets, test_users, test_seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
 
 
 
