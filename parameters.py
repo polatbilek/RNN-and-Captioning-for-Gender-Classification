@@ -15,19 +15,20 @@ class flags(object):
 
 
 		#output file paths
-		self.model_path = "/media/cvrg/HDD/darg/models/en"
+		self.model_path = "/media/cvrg/HDD/darg/models/ar"
 		self.model_name = "en-model-0.001-0.0001-0.ckpt"
-		self.log_path = "/home/cvrg/darg/logs/logs_CNN_RNN_en.txt"
+		self.log_path = "/home/cvrg/darg/logs/logs_CNN_RNN_ar.txt"
 
 
 		#optimization parameters
-		self.lang = "en"
-		self.model_save_threshold = 0.78
+		self.lang = "ar"
+		self.model_save_threshold = 0.75
 		self.optimize = True #if true below values will be used for hyper parameter optimization, or if testing is run: all the models in model_path will be tested
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
 		self.l_rate = [0.01]
-		self.reg_param = [0.001, 0.005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]
-		
+		self.reg_param = [0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]
+		self.rnn_cell_sizes = [90, 120, 150]
+		self.cnn_filter_counts = [60, 80, 100]
 
 
 
@@ -44,7 +45,7 @@ class flags(object):
 		self.filter_sizes = "3,6,9"
 			#RNN
 		self.word_embedding_size = 200
-		self.rnn_cell_size = 150
+		self.rnn_cell_size = 100
 
 
 

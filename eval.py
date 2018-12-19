@@ -116,6 +116,17 @@ if __name__ == "__main__":
 			if model.endswith(".ckpt.index"):
 				FLAGS.model_name = model[:-6]
 				tf.reset_default_graph()
+
+				if "90" in FLAGS.model_name:
+					FLAGS.num_filters = 60
+					FLAGS.rnn_cell_size = 90
+				elif "120" in FLAGS.model_name:
+					FLAGS.num_filters = 80
+					FLAGS.rnn_cell_size = 120
+				elif "150" in FLAGS.model_name:
+					FLAGS.num_filters = 100
+					FLAGS.rnn_cell_size = 150
+
 				net = network(embeddings_char, embeddings_word)
 				test(net, tweets, users, seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
 	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name

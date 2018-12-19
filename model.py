@@ -30,18 +30,21 @@ class network(object):
 			total_tweets = FLAGS.batch_size * FLAGS.tweet_per_user
 
 			# weigths
-			self.weights = {'fc1': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size + num_of_total_filters, FLAGS.num_classes]), name="fc1-weights"),
+			self.weights = {'fc1': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, FLAGS.num_classes]), name="fc1-weights"),
 					'att1-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att1-weights"), #rnn word level
 					'att1-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att1-vector"),							  #rnn word level
 					'att2-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att2-weights"), #rnn user level
 					'att2-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att2-vector"),							  #rnn user level
 					'att2-cnn-w': tf.Variable(tf.random_normal([num_of_total_filters, num_of_total_filters]), name="att2-weights"),	  #cnn user level
-					'att2-cnn-v': tf.Variable(tf.random_normal([num_of_total_filters]), name="att2-vector")}						  #cnn user level
+					'att2-cnn-v': tf.Variable(tf.random_normal([num_of_total_filters]), name="att2-vector"),						  #cnn user level
+					'att3-fusion-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att3-weights"), #fusion	  
+					'att3-fusion-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att3-vector")}						     #fusion
 			# biases
 			self.bias = {'fc1': tf.Variable(tf.random_normal([FLAGS.num_classes]), name="fc1-bias-noreg"),
 				     'att1-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att1-bias-noreg"),  #rnn word level
 				     'att2-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att2-bias-noreg"),  #rnn user level
-				     'att2-cnn-w': tf.Variable(tf.random_normal([num_of_total_filters]), name="att2-bias-noreg")} #cnn user level
+				     'att2-cnn-w': tf.Variable(tf.random_normal([num_of_total_filters]), name="att2-bias-noreg"), #cnn user level
+					 'att3-fusion-w': tf.Variable(tf.random_normal([num_of_total_filters]), name="att3-bias-noreg")} #fusion
 
 
 			# initialize the computation graph for the neural network
@@ -73,11 +76,17 @@ class network(object):
 
 
 			#fusion of rnn and cnn
-			self.concat_output = tf.concat([self.attention_output_rnn, self.attention_output_cnn], -1)
+			self.temp = tf.expand_dims(self.attention_output_rnn, 1)
+			self.temp2 = tf.expand_dims(self.attention_output_cnn, 1)
+			self.concat_output = tf.concat([self.temp, self.temp2], 1)
+
+			self.att_context_vector_fusion = tf.tanh(tf.tensordot(self.concat_output, self.weights["att3-fusion-w"], axes=1) + self.bias["att3-fusion-w"])
+			self.attentions_fusion = tf.nn.softmax(tf.tensordot(self.att_context_vector_fusion, self.weights["att3-fusion-v"], axes=1))
+			self.attention_output_fusion = tf.reduce_sum(self.concat_output * tf.expand_dims(self.attentions_fusion, -1), 1)
 
 
 			# FC layer for reducing the dimension to 2(# of classes)
-			self.logits = tf.matmul(self.concat_output, self.weights["fc1"]) + self.bias["fc1"]
+			self.logits = tf.matmul(self.attention_output_fusion, self.weights["fc1"]) + self.bias["fc1"]
 
 			# predictions
 			self.prediction = tf.nn.softmax(self.logits)

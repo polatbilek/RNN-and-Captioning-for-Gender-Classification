@@ -41,31 +41,34 @@ if __name__ == "__main__":
 				 target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
 
 	else:
-		for learning_rate in FLAGS.l_rate:
-			for regularization_param in FLAGS.reg_param:
+		for i in range(len(FLAGS.rnn_cell_sizes)):
+			for learning_rate in FLAGS.l_rate:
+				for regularization_param in FLAGS.reg_param:
 
-				#prep the network
-				tf.reset_default_graph()
-				FLAGS.learning_rate = learning_rate
-				FLAGS.l2_reg_lambda = regularization_param
-				net = network(embeddings_char, embeddings_word)
+					#prep the network
+					tf.reset_default_graph()
+					FLAGS.learning_rate = learning_rate
+					FLAGS.l2_reg_lambda = regularization_param
+					FLAGS.rnn_cell_size = FLAGS.rnn_cell_sizes[i]
+					FLAGS.num_filters = FLAGS.cnn_filter_counts[i]
+					net = network(embeddings_char, embeddings_word)
 
-				#print specs
-				print("---TRAINING STARTED---")
-				model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", rnn cell size:"
-				model_specs+=  str(FLAGS.rnn_cell_size) + ", filter size:" + str(FLAGS.num_filters) + ", language:" + FLAGS.lang
-				print(model_specs)
+					#print specs
+					print("---TRAINING STARTED---")
+					model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", rnn cell size:"
+					model_specs+=  str(FLAGS.rnn_cell_size) + ", filter size:" + str(FLAGS.num_filters) + ", language:" + FLAGS.lang
+					print(model_specs)
 
-				#take the logs
-				f = open(FLAGS.log_path,"a")
-				f.write("---TRAINING STARTED---\n")
-				model_specs += "\n"
-				f.write(model_specs)
-				f.close()
+					#take the logs
+					f = open(FLAGS.log_path,"a")
+					f.write("---TRAINING STARTED---\n")
+					model_specs += "\n"
+					f.write(model_specs)
+					f.close()
 
-				#start training
-				train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, \
-						target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
+					#start training
+					train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, \
+							target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
 
 
 	print("---TESTING STARTED---")
@@ -81,13 +84,24 @@ if __name__ == "__main__":
 			if model.endswith(".ckpt.index"):
 				FLAGS.model_name = model[:-6]
 				tf.reset_default_graph()
+
+				if "90" in FLAGS.model_name:
+					FLAGS.num_filters = 60
+					FLAGS.rnn_cell_size = 90
+				elif "120" in FLAGS.model_name:
+					FLAGS.num_filters = 80
+					FLAGS.rnn_cell_size = 120
+				elif "150" in FLAGS.model_name:
+					FLAGS.num_filters = 100
+					FLAGS.rnn_cell_size = 150
+
 				net = network(embeddings_char, embeddings_word)
-				test(net, test_tweets, test_users, test_seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
+				test(net, tweets, users, seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
 	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
 	else:
 		tf.reset_default_graph()
 		net = network(embeddings_char, embeddings_word)
-		test(net, test_tweets, test_users, test_seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
+		test(net, tweets, users, seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
 
 
 
