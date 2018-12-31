@@ -49,7 +49,7 @@ class network(object):
 
 			# initialize the computation graph for the neural network
 			self.rnn_with_attention()
-			self.cnn(embeddings_char.shape[0])
+			#self.cnn(embeddings_char.shape[0])
 			self.architecture()
 			self.backward_pass()
 
@@ -65,21 +65,21 @@ class network(object):
 
 		with tf.device('/device:GPU:0'):
 			#user level attention
-			self.att_context_vector_char = tf.tanh(tf.tensordot(self.cnn_output, self.weights["att2-cnn-w"], axes=1) + self.bias["att2-cnn-w"])
-			self.attentions_char = tf.nn.softmax(tf.tensordot(self.att_context_vector_char, self.weights["att2-cnn-v"], axes=1))
-			self.attention_output_cnn = tf.reduce_sum(self.cnn_output * tf.expand_dims(self.attentions_char, -1), 1)
+			#self.att_context_vector_char = tf.tanh(tf.tensordot(self.cnn_output, self.weights["att2-cnn-w"], axes=1) + self.bias["att2-cnn-w"])
+			#self.attentions_char = tf.nn.softmax(tf.tensordot(self.att_context_vector_char, self.weights["att2-cnn-v"], axes=1))
+			#self.attention_output_cnn = tf.reduce_sum(self.cnn_output * tf.expand_dims(self.attentions_char, -1), 1)
 
 			#user level attention
-			self.att_context_vector_word = tf.tanh(tf.tensordot(self.rnn_output, self.weights["att2-w"], axes=1) + self.bias["att2-w"])
-			self.attentions_word = tf.nn.softmax(tf.tensordot(self.att_context_vector_word, self.weights["att2-v"], axes=1))
-			self.attention_output_rnn = tf.reduce_sum(self.rnn_output * tf.expand_dims(self.attentions_word, -1), 1)
+			#self.att_context_vector_word = tf.tanh(tf.tensordot(self.rnn_output, self.weights["att2-w"], axes=1) + self.bias["att2-w"])
+			#self.attentions_word = tf.nn.softmax(tf.tensordot(self.att_context_vector_word, self.weights["att2-v"], axes=1))
+			#self.attention_output_rnn = tf.reduce_sum(self.rnn_output * tf.expand_dims(self.attentions_word, -1), 1)
 
 
 			#fusion of rnn and cnn
-			self.temp = tf.expand_dims(self.attention_output_rnn, 1)
-			self.temp2 = tf.expand_dims(self.attention_output_cnn, 1)
-			self.concat_output = tf.concat([self.temp, self.temp2], 1)
-
+			#self.temp = tf.expand_dims(self.attention_output_rnn, 1)
+			#self.temp2 = tf.expand_dims(self.attention_output_cnn, 1)
+			#self.concat_output = tf.concat([self.temp, self.temp2], 1)
+			self.concat_output = self.rnn_output
 			self.att_context_vector_fusion = tf.tanh(tf.tensordot(self.concat_output, self.weights["att3-fusion-w"], axes=1) + self.bias["att3-fusion-w"])
 			self.attentions_fusion = tf.nn.softmax(tf.tensordot(self.att_context_vector_fusion, self.weights["att3-fusion-v"], axes=1))
 			self.attention_output_fusion = tf.reduce_sum(self.concat_output * tf.expand_dims(self.attentions_fusion, -1), 1)
