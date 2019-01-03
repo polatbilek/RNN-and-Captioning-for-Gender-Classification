@@ -3,13 +3,14 @@ import tensorflow as tf
 from preprocess import *
 import numpy as np
 from model import network
+from model_rnn import network_rnn
 
 
 
 ###########################################################################################################################
 ##trains and validates the model
 ###########################################################################################################################
-def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word):
+def train(network, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word,parameters):
 
 	saver = tf.train.Saver(max_to_keep=None)
 
@@ -21,6 +22,17 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 			sess.run(init)
 			sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings_word})
 
+			network.cell_fw.set_weights(parameters["fw_weights"])
+			network.cell_bw.set_weights(parameters["bw_weights"])
+			sess.run(network.init1, feed_dict={network.init1_placeholder:parameters["fc1"]})
+			sess.run(network.init2, feed_dict={network.init2_placeholder:parameters["att1-weights"]})
+			sess.run(network.init3, feed_dict={network.init3_placeholder:parameters["att1-vector"]})
+			sess.run(network.init4, feed_dict={network.init4_placeholder:parameters["att2-weights"]})
+			sess.run(network.init5, feed_dict={network.init5_placeholder:parameters["att2-vector"]})
+			sess.run(network.init6, feed_dict={network.init6_placeholder:parameters["fc1-bias-noreg"]})
+			sess.run(network.init7, feed_dict={network.init7_placeholder:parameters["att1-bias-noreg"]})
+			sess.run(network.init8, feed_dict={network.init8_placeholder:parameters["att2-bias-noreg"]})
+			del  parameters
 
 			#load the model from checkpoint file if it is required
 			if FLAGS.use_pretrained_model == True:
@@ -58,9 +70,8 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 
 
 					#run the graph
-					feed_dict = {network.input_x: training_batch_x_cnn,\
-							 	network.X: training_batch_x_rnn, network.sequence_length: training_batch_seqlen,\
-							 	network.Y: training_batch_y_rnn, network.reg_param: FLAGS.l2_reg_lambda}
+					feed_dict = {network.X: training_batch_x_rnn, network.sequence_length: training_batch_seqlen,\
+							 network.Y: training_batch_y_rnn, network.reg_param: FLAGS.l2_reg_lambda}
 
 					_, loss, prediction, accuracy = sess.run([network.train, network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 					#a, b, c, d = sess.run([network.attention_output_rnn, network.temp, network.temp2, network.concat_output], feed_dict=feed_dict)
@@ -109,8 +120,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 
 
 					#run the graph
-					feed_dict = {network.input_x: valid_batch_x_cnn,\
-							 network.X: valid_batch_x_rnn, network.sequence_length: valid_batch_seqlen,\
+					feed_dict = {network.X: valid_batch_x_rnn, network.sequence_length: valid_batch_seqlen,\
 							 network.Y: valid_batch_y_rnn, network.reg_param: FLAGS.l2_reg_lambda}
 
 					loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
@@ -203,12 +213,47 @@ if __name__ == "__main__":
 		for learning_rate in FLAGS.l_rate:
 			for regularization_param in FLAGS.reg_param:
 
+				######################################################
+				bw_weights = None
+				fw_weights = None
+				parameters = {}
+				#retrieve cells from model
+				tf.reset_default_graph()
+				netrnn = network_rnn(embeddings_word)
+				saver = tf.train.Saver(max_to_keep=None)
+				
+				with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
+					# init variables
+					initt = tf.global_variables_initializer()
+					sess.run(initt)
+					sess.run(netrnn.embedding_init, feed_dict={netrnn.embedding_placeholder: embeddings_word})
+
+					#load the model from checkpoint file
+					load_as = os.path.join(FLAGS.model_path, FLAGS.model_name)
+					print("Loading the pretrained model from: " + str(load_as))
+					saver.restore(sess, load_as)
+					
+					graph = tf.get_default_graph()
+					list_of_tuples = graph.get_operations()
+					for el in list_of_tuples:
+						print el.name
+					sys.exit()
+					parameters["fw_weights"] = netrnn.cell_fw.get_weights()
+					parameters["bw_weights"] = netrnn.cell_bw.get_weights()
+					parameters["fc1"] = netrnn.weights["fc1"].eval()
+					parameters["att1-weights"] = netrnn.weights["att1-w"].eval()
+					parameters["att1-vector"] = netrnn.weights["att1-v"].eval()
+					parameters["att2-weights"] = netrnn.weights["att2-w"].eval()
+					parameters["att2-vector"] = netrnn.weights["att2-v"].eval()
+					parameters["fc1-bias-noreg"] = netrnn.bias["fc1"].eval()
+					parameters["att1-bias-noreg"] = netrnn.bias["att1-w"].eval()
+					parameters["att2-bias-noreg"] = netrnn.bias["att2-w"].eval()
+				###################################################
+				del netrnn
 				#prep the network
 				tf.reset_default_graph()
 				FLAGS.learning_rate = learning_rate
 				FLAGS.l2_reg_lambda = regularization_param
-				FLAGS.rnn_cell_size = FLAGS.rnn_cell_sizes[i]
-				FLAGS.num_filters = FLAGS.cnn_filter_counts[i]
 				net = network(embeddings_char, embeddings_word)
 
 				#print specs
@@ -226,7 +271,7 @@ if __name__ == "__main__":
 
 				#start training
 				train(net, training_tweets, training_users, training_seq_lengths, valid_tweets, valid_users, valid_seq_lengths, \
-					target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
+					target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word, parameters)
 
 
 

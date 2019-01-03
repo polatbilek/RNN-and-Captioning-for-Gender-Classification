@@ -9,13 +9,13 @@ class network(object):
 	############################################################################################################################
 	def __init__(self, embeddings_char, embeddings_word):
 
+		
+
+		# create word embeddings
+		self.tf_embeddings = tf.Variable(tf.constant(0.0, shape=[embeddings_word.shape[0], embeddings_word.shape[1]]), trainable=False, name="tf_embeddings")
+		self.embedding_placeholder = tf.placeholder(tf.float32, [embeddings_word.shape[0], embeddings_word.shape[1]])
+		self.embedding_init = self.tf_embeddings.assign(self.embedding_placeholder)  # initialize this once  with sess.run when the session begins
 		with tf.device('/device:GPU:0'):
-
-			# create word embeddings
-			self.tf_embeddings = tf.Variable(tf.constant(0.0, shape=[embeddings_word.shape[0], embeddings_word.shape[1]]), trainable=False, name="tf_embeddings")
-			self.embedding_placeholder = tf.placeholder(tf.float32, [embeddings_word.shape[0], embeddings_word.shape[1]])
-			self.embedding_init = self.tf_embeddings.assign(self.embedding_placeholder)  # initialize this once  with sess.run when the session begins
-
 
 			# create GRU cells
 			with tf.variable_scope("tweet"):
@@ -30,21 +30,69 @@ class network(object):
 			total_tweets = FLAGS.batch_size * FLAGS.tweet_per_user
 
 			# weigths
-			self.weights = {'fc1': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, FLAGS.num_classes]), name="fc1-weights"),
-					'att1-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att1-weights"), #rnn word level
-					'att1-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att1-vector"),							  #rnn word level
-					'att2-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att2-weights"), #rnn user level
-					'att2-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att2-vector"),							  #rnn user level
-					'att2-cnn-w': tf.Variable(tf.random_normal([num_of_total_filters, num_of_total_filters]), name="att2-weights"),	  #cnn user level
-					'att2-cnn-v': tf.Variable(tf.random_normal([num_of_total_filters]), name="att2-vector"),						  #cnn user level
-					'att3-fusion-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att3-weights"), #fusion	  
-					'att3-fusion-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att3-vector")}						     #fusion
+			self.weights = {'fc1': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, FLAGS.num_classes]), name="fc1-weights", trainable=False),
+					'att1-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att1-weights", trainable=False), #rnn word level
+					'att1-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att1-vector", trainable=False),				#rnn word level
+					'att2-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att2-weights", trainable=False), #rnn user level
+					'att2-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att2-vector", trainable=False),		 #rnn user level
+					'att2-cnn-w': tf.Variable(tf.random_normal([num_of_total_filters, num_of_total_filters]), name="att2-weights", trainable=False),	  #cnn user level
+					'att2-cnn-v': tf.Variable(tf.random_normal([num_of_total_filters]), name="att2-vector", trainable=False),		#cnn user level
+					'att3-fusion-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att3-weights", trainable=False), #fusion	  
+					'att3-fusion-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att3-vector", trainable=False)}	#fusion
 			# biases
-			self.bias = {'fc1': tf.Variable(tf.random_normal([FLAGS.num_classes]), name="fc1-bias-noreg"),
-				     'att1-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att1-bias-noreg"),  #rnn word level
-				     'att2-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att2-bias-noreg"),  #rnn user level
-				     'att2-cnn-w': tf.Variable(tf.random_normal([num_of_total_filters]), name="att2-bias-noreg"), #cnn user level
-					 'att3-fusion-w': tf.Variable(tf.random_normal([num_of_total_filters]), name="att3-bias-noreg")} #fusion
+			self.bias = {'fc1': tf.Variable(tf.random_normal([FLAGS.num_classes]), name="fc1-bias-noreg", trainable=False),
+				     'att1-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att1-bias-noreg", trainable=False),  #rnn word level
+				     'att2-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att2-bias-noreg", trainable=False),  #rnn user level
+				     'att2-cnn-w': tf.Variable(tf.random_normal([num_of_total_filters]), name="att3-bias-noreg", trainable=False), #cnn user level
+				     'att3-fusion-w': tf.Variable(tf.random_normal([num_of_total_filters]), name="att4-bias-noreg", trainable=False)} #fusion
+
+
+			'''
+fc1-weights:0
+att1-weights:0
+att1-vector:0
+att2-weights:0
+att2-vector:0
+fc1-bias-noreg:0
+att1-bias-noreg:0
+att2-bias-noreg:0
+tweet/fw/gru_cell/gates/kernel:0
+tweet/fw/gru_cell/gates/bias:0
+tweet/fw/gru_cell/candidate/kernel:0
+tweet/fw/gru_cell/candidate/bias:0
+tweet/bw/gru_cell/gates/kernel:0
+tweet/bw/gru_cell/gates/bias:0
+tweet/bw/gru_cell/candidate/kernel:0
+tweet/bw/gru_cell/candidate/bias:0
+			
+			'''
+			#for loading pre-trained parameters
+			self.init1_placeholder = tf.placeholder(tf.float32, [2 * FLAGS.rnn_cell_size, FLAGS.num_classes])
+			self.init1 = self.weights['fc1'].assign(self.init1_placeholder)
+
+			self.init2_placeholder = tf.placeholder(tf.float32, [2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size])
+			self.init2 = self.weights['att1-w'].assign(self.init2_placeholder) 
+
+			self.init3_placeholder = tf.placeholder(tf.float32, [2 * FLAGS.rnn_cell_size])
+			self.init3 = self.weights['att1-v'].assign(self.init3_placeholder)
+
+			self.init4_placeholder = tf.placeholder(tf.float32, [2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size])
+			self.init4 = self.weights['att2-w'].assign(self.init4_placeholder) 
+
+			self.init5_placeholder = tf.placeholder(tf.float32, [2 * FLAGS.rnn_cell_size])
+			self.init5 = self.weights['att2-v'].assign(self.init5_placeholder) 
+ 
+			self.init6_placeholder = tf.placeholder(tf.float32, [FLAGS.num_classes])
+			self.init6 = self.bias["fc1"].assign(self.init6_placeholder)  
+
+			self.init7_placeholder = tf.placeholder(tf.float32, [2 * FLAGS.rnn_cell_size])
+			self.init7 = self.bias["att1-w"].assign(self.init7_placeholder)  
+
+			self.init8_placeholder = tf.placeholder(tf.float32, [2 * FLAGS.rnn_cell_size])
+			self.init8 = self.bias["att2-w"].assign(self.init8_placeholder)  
+			
+
+
 
 
 			# initialize the computation graph for the neural network
@@ -70,23 +118,23 @@ class network(object):
 			#self.attention_output_cnn = tf.reduce_sum(self.cnn_output * tf.expand_dims(self.attentions_char, -1), 1)
 
 			#user level attention
-			#self.att_context_vector_word = tf.tanh(tf.tensordot(self.rnn_output, self.weights["att2-w"], axes=1) + self.bias["att2-w"])
-			#self.attentions_word = tf.nn.softmax(tf.tensordot(self.att_context_vector_word, self.weights["att2-v"], axes=1))
-			#self.attention_output_rnn = tf.reduce_sum(self.rnn_output * tf.expand_dims(self.attentions_word, -1), 1)
+			self.att_context_vector_word = tf.tanh(tf.tensordot(self.rnn_output, self.weights["att2-w"], axes=1) + self.bias["att2-w"])
+			self.attentions_word = tf.nn.softmax(tf.tensordot(self.att_context_vector_word, self.weights["att2-v"], axes=1))
+			self.attention_output_rnn = tf.reduce_sum(self.rnn_output * tf.expand_dims(self.attentions_word, -1), 1)
 
 
 			#fusion of rnn and cnn
 			#self.temp = tf.expand_dims(self.attention_output_rnn, 1)
 			#self.temp2 = tf.expand_dims(self.attention_output_cnn, 1)
 			#self.concat_output = tf.concat([self.temp, self.temp2], 1)
-			self.concat_output = self.rnn_output
-			self.att_context_vector_fusion = tf.tanh(tf.tensordot(self.concat_output, self.weights["att3-fusion-w"], axes=1) + self.bias["att3-fusion-w"])
-			self.attentions_fusion = tf.nn.softmax(tf.tensordot(self.att_context_vector_fusion, self.weights["att3-fusion-v"], axes=1))
-			self.attention_output_fusion = tf.reduce_sum(self.concat_output * tf.expand_dims(self.attentions_fusion, -1), 1)
+			#self.att_context_vector_fusion = tf.tanh(tf.tensordot(self.concat_output, self.weights["att3-fusion-w"], axes=1) + self.bias["att3-fusion-w"])
+			#self.attentions_fusion = tf.nn.softmax(tf.tensordot(self.att_context_vector_fusion, self.weights["att3-fusion-v"], axes=1))
+			#self.attention_output_fusion = tf.reduce_sum(self.concat_output * tf.expand_dims(self.attentions_fusion, -1), 1)
 
 
 			# FC layer for reducing the dimension to 2(# of classes)
-			self.logits = tf.matmul(self.attention_output_fusion, self.weights["fc1"]) + self.bias["fc1"]
+			#self.logits = tf.matmul(self.attention_output_fusion, self.weights["fc1"]) + self.bias["fc1"]
+			self.logits = tf.matmul(self.attention_output_rnn, self.weights["fc1"]) + self.bias["fc1"]
 
 			# predictions
 			self.prediction = tf.nn.softmax(self.logits)
@@ -121,7 +169,7 @@ class network(object):
 			self.optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
 			self.train = self.optimizer.minimize(self.loss)
 
-			return self.accuracy, self.loss, self.train
+			return self.loss, self.train
 
 
 

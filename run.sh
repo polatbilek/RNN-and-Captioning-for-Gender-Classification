@@ -1,7 +1,7 @@
 #!/bin/sh
 
 cp parameters_en.py parameters.py
-python main.py
+python train.py
 #python modelDeleter.py
 
 #cp parameters_es.py parameters.py
