@@ -48,8 +48,6 @@ if __name__ == "__main__":
 				tf.reset_default_graph()
 				FLAGS.learning_rate = learning_rate
 				FLAGS.l2_reg_lambda = regularization_param
-				FLAGS.rnn_cell_size = FLAGS.rnn_cell_sizes[i]
-				FLAGS.num_filters = FLAGS.cnn_filter_counts[i]
 				net = network(embeddings_char, embeddings_word)
 
 				#print specs

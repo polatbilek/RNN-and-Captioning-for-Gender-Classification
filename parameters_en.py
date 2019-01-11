@@ -15,9 +15,12 @@ class flags(object):
 
 
 		#output file paths
-		self.model_path = "/media/cvrg/HDD/darg/models/zzz-backup/RNNwA/first run/en"
-		self.model_name = "en-model-150-0.01-5e-05-15.ckpt"
+		self.model_path = "/media/cvrg/HDD/darg/models"
+		self.model_path_rnn = "/media/cvrg/HDD/darg/models/zzz-backup/RNNwA/first run/en"
+		self.model_path_cnn = "/media/cvrg/HDD/darg/models/zzz-backup/CNNwA/second_run/en"
+		self.model_name = "temp.ckpt"
 		self.model_name_rnn = "en-model-150-0.01-5e-05-15.ckpt"
+		self.model_name_cnn = "en-model-100-0.01-1e-06-11.ckpt"
 		self.log_path = "/home/cvrg/darg/logs/logs_CNN_RNN_en.txt"
 
 
@@ -27,7 +30,7 @@ class flags(object):
 		self.optimize = True #if true below values will be used for hyper parameter optimization, or if testing is run: all the models in model_path will be tested
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
 		self.l_rate = [0.00001]
-		self.reg_param = [0.0001, 0.00005, 0.00001, 0.000005, 0.000001, 0.0000005, 0.0000001]
+		self.reg_param = [0]
 		
 
 
