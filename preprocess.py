@@ -150,7 +150,7 @@ def readData(path):
     tweets = [row[1] for row in training_set]
     users = [row[0] for row in training_set]
 
-    return tweets, users, target_values, seq_lengths
+    return target_values
 
 
 
@@ -246,62 +246,20 @@ def readCaptions(path):
 #########################################################################################################################
 # Reads vectors of trained models
 #
-# input:  string(path) = path to the folder that contains the vector files in below format
-# format -->   userID:::vector:::truth_value (values in the vector are comma seperated)
+# input:  string(path) = path to the folder that contains the vector files
+#         list(users) = usernames to get
 #
-# output: list(rnn_data) - Vectors of rnn with corrisponding indexes of users
-#         list(cnn_data) - Vectors of cnn with corrisponding indexes of users
-#         list(image_data) - Vectors of image model with corrisponding indexes of users
-#         list(users) - List of usernames
-#         list(target_values) - List of target values with corrisponding indexes of users
-def readVectors(path):
-	rnn_data = []
-	users = []
-	target_values = {}
+# output: list(batch_user_vectors)
+def readVectors(path, users):
+    batch_users_vector = []
 
-	for vector_file in os.listdir(path):
-		if "rnn" in vector_file:
-			file_handler = open(os.path.join(path,vector_file),"r")
-			
-			for line in file_handler:
-				seperated = line.strip().split(":::")
-
-				users.append(seperated[0]) #add user to user list
-
-				vector_list = [] 
-				for value in seperated[1].split(","): #add vector to rnn_data
-					vector_list.append(float(value))
-				rnn_data.append(vector_list)
-
-				target_values[seperated[0]] = [int(seperated[2].split(",")[0]), int(seperated[2].split(",")[1])] #target values extraction
-				
-
-			file_handler.close()
-
-	cnn_data = [i for i in range(len(rnn_data))]
-	image_data = [i for i in range(len(rnn_data))]
-
-	for vector_file in os.listdir(path):
-		if "rnn" not in vector_file:
-			file_handler = open(os.path.join(path,vector_file),"r")
-
-			for line in file_handler:
-				seperated = line.strip().split(":::")
-
-				vector_list = []
-				for value in seperated[1].split(","):
-					vector_list.append(float(value))	
-				
-				index = users.index(seperated[0])
-				if "cnn" in vector_file:
-					cnn_data[index] = vector_list
-				else:
-					image_data[index] = vector_list
-
-			file_handler.close()
+    for user in users:
+        user_file_name = user + ".npy"
+        user_vector = np.save(os.path.join(path, user_file_name))
+        batch_users_vector.append(user_vector)
 
 
-	return rnn_data, cnn_data, image_data, users, target_values
+    return batch_users_vector
 
 
 
@@ -573,26 +531,7 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 
 	batch_targets = user2target(batch_users, targets)
 
-	# prepare input by adding padding
-	tweet_lengths = [len(tweet) for tweet in batch_tweets]
-	max_tweet_length = max(tweet_lengths)
-
-	batch_input = []
-	for i in range(numof_total_tweet):
-		tweet = batch_tweets[i]
-		padded_tweet = []
-		for j in range(max_tweet_length):
-			if len(tweet) > j:
-				padded_tweet.append(tweet[j])
-			else:
-				padded_tweet.append("PAD")
-		batch_input.append(padded_tweet)
-
-
-	#reshape the input for shuffling operation
-	tweet_batches = np.reshape(np.asarray(batch_input), (FLAGS.batch_size, FLAGS.tweet_per_user, max_tweet_length)).tolist()
 	target_batches = np.reshape(np.asarray(batch_targets), (FLAGS.batch_size, FLAGS.tweet_per_user, 2)).tolist()
-	seqlen_batches = np.reshape(np.asarray(batch_sequencelen), (FLAGS.batch_size, FLAGS.tweet_per_user)).tolist()
 
 	#prepare the target values
 	target_values = []
@@ -602,25 +541,12 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 
 	'''
 	#user level shuffling
-	c = list(zip(tweet_batches, target_batches, seqlen_batches))
+	c = list(zip(target_batches))
 	random.shuffle(c)
-	tweet_batches, target_batches, seqlen_batches = zip(*c)
+	target_batches = zip(*c)
 	'''
 
-	tweet_batches = list(tweet_batches)
-	target_values = list(target_values)
-	seqlen_batches = list(seqlen_batches)
-
-	#tweet level shuffling
-	for i in range(FLAGS.batch_size):
-		c = list(zip(tweet_batches[i], seqlen_batches[i]))
-		random.shuffle(c)
-		tweet_batches[i], seqlen_batches[i] = zip(*c)
-
-	tweet_batches = list(tweet_batches)
-	seqlen_batches = list(seqlen_batches)
-
-	return tweet_batches, target_batches, seqlen_batches
+	return target_batches
 
 
 
