@@ -212,14 +212,10 @@ def _main(args):
 
         image_vectors = np.asarray(user_image_vectors)
         image_vectors = np.squeeze(image_vectors)
-        pickle_name = user_name + ".pkl"
-        #print(np.shape(image_vectors))
-
+        pickle_name = user_name + ".npy"
 
         output_pickle_file = os.path.join(pickle_dump_folder, pickle_name)
-        pickle_file = open(output_pickle_file, 'wb')
-        pickle.dump(image_vectors, pickle_file, protocol=2)
-        pickle_file.close()
+        np.save(output_pickle_file, image_vectors)
 
     sess.close()
 
