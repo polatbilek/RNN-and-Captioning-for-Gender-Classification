@@ -12,9 +12,12 @@ from eval import *
 if __name__ == "__main__":
 
 	print("---PREPROCESSING STARTED---")
+	
 
-	print("\treading word embeddings...")
-	vocabulary, embeddings = readGloveEmbeddings(FLAGS.word_embed_path, FLAGS.word_embedding_size)
+	users = ["bu_9", "bu_10"]
+	asd = readYOLOvectors(users, FLAGS.yolo_vectors_path)
+	print(str(np.shape(asd)))
+	sys.exit()
 
 	print("\treading tweets...")
 	tweets, users, target_values, seq_lengths = readData(FLAGS.training_data_path)

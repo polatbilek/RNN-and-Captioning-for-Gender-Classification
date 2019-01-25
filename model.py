@@ -9,22 +9,11 @@ class network(object):
 	############################################################################################################################
 	def __init__(self, embeddings):
 		with tf.device('/device:GPU:0'):
-			self.prediction = []
 
-			# create word embeddings
-			self.tf_embeddings = tf.Variable(tf.constant(0.0, shape=[embeddings.shape[0], embeddings.shape[1]]), trainable=False, name="tf_embeddings")
-			self.embedding_placeholder = tf.placeholder(tf.float32, [embeddings.shape[0], embeddings.shape[1]])
-			self.embedding_init = self.tf_embeddings.assign(self.embedding_placeholder)  # initialize this once  with sess.run when the session begins
-
-			# create GRU cells
-			with tf.variable_scope("tweet"):
-				self.cell_fw = tf.nn.rnn_cell.GRUCell(num_units=FLAGS.rnn_cell_size, activation=tf.sigmoid)
-				self.cell_bw = tf.nn.rnn_cell.GRUCell(num_units=FLAGS.rnn_cell_size, activation=tf.sigmoid)
 
 			# RNN placeholders
 			self.X = tf.placeholder(tf.int32, [FLAGS.batch_size*FLAGS.tweet_per_user, None])
 			self.Y = tf.placeholder(tf.float64, [FLAGS.batch_size, FLAGS.num_classes])
-			self.sequence_length = tf.placeholder(tf.int32, [FLAGS.batch_size*FLAGS.tweet_per_user])
 			self.reg_param = tf.placeholder(tf.float32, shape=[])
 
 			# weigths
@@ -99,67 +88,7 @@ class network(object):
 
 
 
-
-
-
-	############################################################################################################################
-	def rnn(self):
-
-		# embedding layer
-		self.rnn_input = tf.nn.embedding_lookup(self.tf_embeddings, self.X)
-
-		# rnn layer
-		(self.outputs, self.output_states) = tf.nn.bidirectional_dynamic_rnn(self.cell_fw, self.cell_bw, self.rnn_input, self.sequence_length, dtype=tf.float32,scope="tweet")
-
-		# concatenate the backward and forward cells
-		self.rnn_output_raw = tf.concat([self.output_states[0], self.output_states[1]], 1)
-		
-		#reshape the output for the next layers
-		self.rnn_output = tf.reshape(self.rnn_output_raw, [FLAGS.batch_size, FLAGS.tweet_per_user, 2*FLAGS.rnn_cell_size])
-
-		return self.rnn_output
-
-
-
-
-
-
-
-    ############################################################################################################################
-	def rnn_with_attention(self):
-		with tf.device('/device:GPU:0'):
-			# embedding layer
-			self.rnn_input = tf.nn.embedding_lookup(self.tf_embeddings, self.X)
-
-			# rnn layer
-			(self.outputs, self.output_states) = tf.nn.bidirectional_dynamic_rnn(self.cell_fw, self.cell_bw, self.rnn_input, self.sequence_length, dtype=tf.float32,scope="tweet")
-
-			# concatenate the backward and forward cells
-			self.concat_outputs = tf.concat(self.outputs, 2)
-
-			# attention layer
-			self.att_context_vector = tf.tanh(tf.tensordot(self.concat_outputs, self.weights["att1-w"], axes=1) + self.bias["att1-w"])
-			self.attentions = tf.nn.softmax(tf.tensordot(self.att_context_vector, self.weights["att1-v"], axes=1))
-			self.attention_output_raw = tf.reduce_sum(self.concat_outputs * tf.expand_dims(self.attentions, -1), 1)
-
-			#reshape the output for the next layers
-			self.attention_output = tf.reshape(self.attention_output_raw, [FLAGS.batch_size, FLAGS.tweet_per_user, 2*FLAGS.rnn_cell_size])
-
-			return self.attention_output
-
-
-
-
-
-
-
-
-
-	############################################################################################################################
-	def captioning(self):
-		pass
-
-
+ 
 
 
 
@@ -169,15 +98,10 @@ class network(object):
 
 	############################################################################################################################
 	def cnn(self, sequence_length, num_classes, vocab_size, embedding_size, filter_sizes, num_filters):
-		# CNN placeholders
-		self.input_x = tf.placeholder(tf.int32, [None, sequence_length], name="input_x")
-		self.input_y = tf.placeholder(tf.float32, [None, num_classes], name="input_y")
 
-		# Embedding layer
-		with tf.name_scope("embedding"):
-			W = tf.Variable(tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0), name="W")
-			self.embedded_chars = tf.nn.embedding_lookup(W, self.input_x)
-			self.embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
+
+
+
 
 		# Create a convolution + maxpool layer for each filter size
 		pooled_outputs = []

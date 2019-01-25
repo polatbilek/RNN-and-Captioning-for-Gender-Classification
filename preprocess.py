@@ -6,6 +6,7 @@ from nltk.tokenize import TweetTokenizer
 import os
 import sys
 import random
+import pickle
 
 
 
@@ -112,6 +113,64 @@ def readData(path):
     users = [row[0] for row in training_set]
 
     return tweets, users, target_values, seq_lengths
+
+
+
+
+
+
+
+
+
+#########################################################################################################################
+# Prepares test data
+#
+# input: List (user)  - List of usernames
+#
+# output: List (test_input)  - List of vectors
+def readYOLOvectors(batch_users, pickle_path):
+	vectors = []
+
+	for user in batch_users:
+		#read pickle file
+		user_path = os.path.join(pickle_path, str(user)+".pkl")
+		f = open(user_path, "rb")
+		user_vectors = pickle.load(f)
+		
+		print(str(np.shape(user_vectors)))
+		#if there is a missing photo
+		while len(user_vectors) != 10:
+			user_vectors.concatenate(numpy.zeros(19,19,1024), axis=0)
+		print(str(np.shape(user_vectors)))
+		vectors.append(user_vectors)
+
+	return vectors
+
+
+
+
+
+#########################################################################################################################
+# Prepares test data
+#
+# input: List (user)    - List of usernames
+#        dict (target)  - Dictionary for one-hot gender vectors of users
+#
+# output: List (test_input)  - List of vectors
+#         List (test_output) - List of one-hot gender vector corresponding to tweets in index order
+def readRNNvectors():
+	pass
+	
+
+
+
+
+
+
+
+
+
+
 
 
 
