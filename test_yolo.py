@@ -57,8 +57,8 @@ parser.add_argument(
 
 
 def _main(args):
-    pickle_dump_folder = "/home/darg2/Desktop/a"
-    user_photo_folder = "/home/darg2/Desktop/test"
+    pickle_dump_folder = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27/en/yolo-vectors"
+    user_photo_folder = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27/en/photo"
 
     model_path = os.path.expanduser(args.model_path)
     assert model_path.endswith('.h5'), 'Keras model must be a .h5 file.'
@@ -154,14 +154,16 @@ def _main(args):
             image_data /= 255.
             image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
 
-            out_boxes, out_scores, out_classes, features = sess.run(
-                [boxes, scores, classes, yolo_model.layers[59].output],
+            try:
+                out_boxes, out_scores, out_classes, features = sess.run(
+		            [boxes, scores, classes, yolo_model.layers[59].output],
                 feed_dict={
-                    yolo_model.input: image_data,
-                    input_image_shape: [image.size[1], image.size[0]],
-                    K.learning_phase(): 0
-                })
-
+		                yolo_model.input: image_data,
+		                input_image_shape: [image.size[1], image.size[0]],
+		                K.learning_phase(): 0
+		            })
+            except:
+                print("ERROR at this file" + str(image_file.strip()))
 
             user_name = image_file.strip().split(".")[0]
             user_image_vectors.append(features.tolist())
