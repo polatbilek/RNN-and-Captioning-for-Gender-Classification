@@ -13,14 +13,23 @@ if __name__ == "__main__":
 	print("\treading tweets for target values...")
 	target_values = readData(FLAGS.training_data_path)
 
-
 	#hyperparameter optimization if it is set
 	if FLAGS.optimize == False:
 		#print specs
 		print("---TRAINING STARTED---")
 		model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", fully connected size:"
-		model_specs+=  str(FLAGS.fc_size) + ", language:" + FLAGS.lang
+		model_specs+=  str(FLAGS.ffnn) + ", language:" + FLAGS.lang
 		print(model_specs)
+
+		#####################################################################
+
+		target_values = {}
+
+		for user in os.listdir(FLAGS.image_vector_dump_folder):
+			target_values[str(user.strip().split(".")[0])] = [1, 0]
+
+
+		######################################################################
 
 		#run the network
 		tf.reset_default_graph()
@@ -35,14 +44,12 @@ if __name__ == "__main__":
 				tf.reset_default_graph()
 				FLAGS.learning_rate = learning_rate
 				FLAGS.l2_reg_lambda = regularization_param
-				FLAGS.rnn_cell_size = FLAGS.rnn_cell_sizes[i]
-				FLAGS.num_filters = FLAGS.cnn_filter_counts[i]
 				net = network()
 
 				#print specs
 				print("---TRAINING STARTED---")
-				model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", rnn cell size:"
-				model_specs+=  str(FLAGS.rnn_cell_size) + ", filter size:" + str(FLAGS.num_filters) + ", language:" + FLAGS.lang
+				model_specs = "with parameters: Learning Rate:" + str(FLAGS.learning_rate) + ", Regularization parameter:" + str(FLAGS.l2_reg_lambda) + ", fully connected size:"
+				model_specs += str(FLAGS.ffnn) + ", language:" + FLAGS.lang
 				print(model_specs)
 
 				#take the logs

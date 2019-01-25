@@ -251,15 +251,14 @@ def readCaptions(path):
 #
 # output: list(batch_user_vectors)
 def readVectors(path, users):
-    batch_users_vector = []
+	batch_users_vector = []
 
-    for user in users:
-        user_file_name = user + ".npy"
-        user_vector = np.save(os.path.join(path, user_file_name))
-        batch_users_vector.append(user_vector)
+	for user in users:
+		user_file_name = user + ".npy"
+		user_vector = np.load(os.path.join(path, user_file_name))
+		batch_users_vector.append(user_vector)
 
-
-    return batch_users_vector
+	return batch_users_vector
 
 
 

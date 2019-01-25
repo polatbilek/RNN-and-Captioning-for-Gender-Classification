@@ -5,11 +5,11 @@ class flags(object):
 		#set sizes
 		self.test_set_size = 0.0
 		self.validation_set_size = 0.2
-		self.training_set_size = 0.8
+		self.training_set_size = 1#0.8
 
 		#input file paths
 		self.word_embed_path = "/home/cvrg/darg/glove/glove.twitter.27B.200d.txt" #change word embedding size too
-		self.training_data_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27"
+		self.training_data_path = "/home/darg2/Dropbox/PAN@CLEF2018/pan18-author-profiling-training-2018-02-27"
 		self.test_data_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-test-2018-03-20"
 		self.char_embed_path = "/home/cvrg/darg/glove/char_embeddings.27B.25d.txt"
 
