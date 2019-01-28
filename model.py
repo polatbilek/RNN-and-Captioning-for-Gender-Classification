@@ -37,19 +37,25 @@ class network(object):
 			padding="VALID",
 			name="conv")
 
+		self.conv = tf.squeeze(self.conv)
+
 		self.h = tf.nn.relu(tf.nn.bias_add(self.conv, self.bias['conv']), name="relu1")
 
-		self.pooled = tf.nn.max_pool(
+		self.pooled = tf.nn.avg_pool(
 			self.h,
-			ksize=[1, FLAGS.sequence_length - filter_size + 1, 1, 1], #ksize dikkat!
+			ksize=[1, 19, 19, 1], #ksize dikkat!
 			strides=[1, 1, 1, 1],
 			padding='VALID',
 			name="pool")
 
+		self.pooled = tf.squeeze(self.pooled)
+
+		self.cnn_output = tf.reshape(self.pooled, [FLAGS.batch_size, 10, 1024])
+
 		# Attention
-		self.att_context_vector = tf.tanh(tf.tensordot(self.pooled, self.weights["att-w"], axes=1) + self.bias["att-w"], name="tanh-attention_context_vector")
+		self.att_context_vector = tf.tanh(tf.tensordot(self.cnn_output, self.weights["att-w"], axes=1) + self.bias["att-w"], name="tanh-attention_context_vector")
 		self.attentions = tf.nn.softmax(tf.tensordot(self.att_context_vector, self.weights["att-v"], axes=1), name="softmax-attentions")
-		self.attention_output = tf.reduce_sum(self.pooled * tf.expand_dims(self.attentions, -1), 1, name="reduce_sum-attention_output")
+		self.attention_output = tf.reduce_sum(self.cnn_output * tf.expand_dims(self.attentions, -1), 1, name="reduce_sum-attention_output")
 
 		self.attention_output = tf.squeeze(self.attention_output)
 

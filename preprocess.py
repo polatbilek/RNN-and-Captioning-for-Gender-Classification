@@ -256,6 +256,10 @@ def readVectors(path, users):
 	for user in users:
 		user_file_name = user + ".npy"
 		user_vector = np.load(os.path.join(path, user_file_name))
+
+		while len(user_vector) != 10:
+			user_vector = np.concatenate((user_vector,np.zeros((1,19,19,1024))), axis=0)
+			
 		batch_users_vector.append(user_vector)
 
 	return batch_users_vector

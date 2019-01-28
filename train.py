@@ -24,6 +24,10 @@ def train(network, target_values):
 			saver.restore(sess, load_as)
 			print("Loading the pretrained model from: " + str(load_as))
 
+		#input path
+		yolo_vector_path = os.path.join(os.path.join(FLAGS.training_data_path, FLAGS.lang), "yolo-vectors")
+
+
 		# for each epoch
 		for epoch in range(FLAGS.num_epochs):
 
@@ -50,8 +54,8 @@ def train(network, target_values):
 			num_batches = 0.0
 			batch_accuracy = 0.0
 			batch_loss = 0.0
-			training_batch_count = 2#int(len(training_users) / int(FLAGS.batch_size))
-			#valid_batch_count = int(len(valid_users) / int(FLAGS.batch_size))
+			training_batch_count = int(len(training_users) / int(FLAGS.batch_size))
+			valid_batch_count = int(len(valid_users) / int(FLAGS.batch_size))
 
 			prev_index = 0
 
@@ -67,25 +71,17 @@ def train(network, target_values):
 					batch_y = training_target[prev_index:]
 
 				prev_index = current_index
-				##########################################################################
-				new_y = []
 
-				for y in batch_y:
-					for i in range(10):
-						new_y.append(y)
-
-				batch_y = np.asarray(new_y)
-
-				##########################################################################
-				batch_x = readVectors(FLAGS.image_vector_dump_folder, batch_users)
+			
+				batch_x = readVectors(yolo_vector_path, batch_users)
 
 				shape = np.shape(batch_x)
 
 				batch_x = np.reshape(batch_x, [shape[0]*shape[1], shape[2], shape[3], shape[4]])
+
 				# run the graph
 				feed_dict = {network.X: batch_x, network.Y: batch_y,  network.reg_param: FLAGS.l2_reg_lambda}
-				_, loss, prediction, accuracy = sess.run(
-					[network.train, network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
+				_, loss, prediction, accuracy = sess.run([network.train, network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
 				# calculate the metrics
 				batch_loss += loss
@@ -105,7 +101,7 @@ def train(network, target_values):
 					batch_accuracy = 0.0
 					num_batches = 0.0
 
-			sys.exit()
+			
 			# VALIDATION
 			batch_accuracy = 0.0
 			batch_loss = 0.0
@@ -123,7 +119,10 @@ def train(network, target_values):
 
 				prev_index = current_index
 
-				batch_x = readVectors(FLAGS.image_vector_dump_folder, batch_users)
+				batch_x = readVectors(yolo_vector_path, batch_users)
+
+				shape = np.shape(batch_x)
+				batch_x = np.reshape(batch_x, [shape[0]*shape[1], shape[2], shape[3], shape[4]])
 
 				# run the graph
 				feed_dict = {network.X: batch_x, network.Y: batch_y, network.reg_param: FLAGS.l2_reg_lambda}

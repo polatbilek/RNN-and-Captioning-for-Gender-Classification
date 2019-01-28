@@ -12,7 +12,6 @@ class flags(object):
 		self.test_data_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-test-2018-03-20"
 		self.rnn_vectors_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27"
 		self.cnn_vectors_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27"
-		self.yolo_vectors_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27"
 
 		#output file paths
 		self.model_path = "/media/cvrg/HDD/darg/models/en"
@@ -25,7 +24,7 @@ class flags(object):
 		self.optimize = True #if true below values will be used for hyper parameter optimization, or if testing is run: all the models in model_path will be tested
 							 #if false hyperparameters specified in "model hyperparameters" will be used, and for testing model with model_name and model_path will be used
 		self.l_rate = [0.01, 0.001]
-		self.reg_param = [0.0005, 0.0001, 0.00005, 0.00001, 0.000005]
+		self.reg_param = [0.000001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005]
 
 
 
@@ -35,6 +34,7 @@ class flags(object):
 		self.l2_reg_lambda = 0.0001
 		self.learning_rate = 0.001
 		self.num_classes = 2
+		self.ffnn = 300
 			
 			#CNN
 		self.num_filters = 75

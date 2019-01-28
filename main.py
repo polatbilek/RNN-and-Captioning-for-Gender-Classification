@@ -21,16 +21,6 @@ if __name__ == "__main__":
 		model_specs+=  str(FLAGS.ffnn) + ", language:" + FLAGS.lang
 		print(model_specs)
 
-		#####################################################################
-
-		target_values = {}
-
-		for user in os.listdir(FLAGS.image_vector_dump_folder):
-			target_values[str(user.strip().split(".")[0])] = [1, 0]
-
-
-		######################################################################
-
 		#run the network
 		tf.reset_default_graph()
 		net = network()

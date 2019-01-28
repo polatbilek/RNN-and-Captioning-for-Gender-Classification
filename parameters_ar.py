@@ -12,7 +12,6 @@ class flags(object):
 		self.test_data_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-test-2018-03-20"
 		self.rnn_vectors_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27"
 		self.cnn_vectors_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27"
-		self.yolo_vectors_path = "/home/cvrg/darg/pan_data/pan18-author-profiling-training-2018-02-27"
 
 		#output file paths
 		self.model_path = "/media/cvrg/HDD/darg/models/ar"
@@ -35,6 +34,7 @@ class flags(object):
 		self.l2_reg_lambda = 0.0001
 		self.learning_rate = 0.001
 		self.num_classes = 2
+		self.ffnn = 200
 			
 			#CNN
 		self.num_filters = 75
