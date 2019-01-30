@@ -78,7 +78,7 @@ if __name__ == "__main__":
 					FLAGS.rnn_cell_size = 150
 
 				net = network()
-				test(net, tweets, users, seq_lengths, target_values, vocabulary_word, vocabulary_char, embeddings_char, embeddings_word)
+				test(net, target_values)
 	#just runs  single model specified in FLAGS.model_path and FLAGS.model_name
 	else:
 		tf.reset_default_graph()

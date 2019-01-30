@@ -30,8 +30,8 @@ def test(network, target_values):
         # start evaluating each batch of test data
         batch_count = int(len(user_names) / FLAGS.batch_size)
 
-	#input path
-	yolo_vector_path_test = os.path.join(os.path.join(FLAGS.test_data_path, FLAGS.lang), "yolo-vectors")
+		#input path
+        yolo_vector_path_test = os.path.join(os.path.join(FLAGS.test_data_path, FLAGS.lang), "yolo-vectors")
 
         prev_index = 0
 
@@ -49,6 +49,9 @@ def test(network, target_values):
             prev_index = current_index
 
             batch_x = readVectors(yolo_vector_path_test, batch_users)
+
+            shape = np.shape(batch_x)
+            batch_x = np.reshape(batch_x, [shape[0]*shape[1], shape[2], shape[3], shape[4]])
 
             # run the graph
             feed_dict = {network.X: batch_x, network.Y: batch_y, network.reg_param: FLAGS.l2_reg_lambda}
