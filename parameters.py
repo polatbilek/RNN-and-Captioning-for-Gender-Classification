@@ -9,10 +9,10 @@ class flags(object):
 
 		#input file paths
 		self.word_embed_path = "/media/darg1/Data/dataset/glove/glove.twitter.27B/glove.twitter.27B.200d.txt" #change word embedding size too
-		self.training_data_path = "/media/darg1/Data/dataset/PAN2018/author-profiling/pan18-author-profiling-training-2018-02-27"
-		self.test_data_path = "/media/darg1/Data/dataset/PAN2018/author-profiling/pan18-author-profiling-test-2018-03-20"
-		#self.word_embed_path = "C:\\Users\\polat\\Desktop\\PAN_files\\glove\\glove.twitter.27B.50d.txt"
-		#self.training_data_path = "C:\\Users\\polat\\Desktop\\PAN_files\\PAN_data_sets\\pan18-author-profiling-training-2018-02-27"
+		self.training_data_path = "/home/darg2/Dropbox/PAN@CLEF2018/pan18-author-profiling-training-2018-02-27"
+		self.test_data_path = "/home/darg2/Dropbox/PAN@CLEF2018/pan18-author-profiling-test"
+		self.training_svm_vector_path = ""
+		self.test_svm_vector_path = ""
 
 		#output file paths
 		self.model_path = "/media/darg1/Data/models/author_profiling_RNNwA/en/cellsize=150"

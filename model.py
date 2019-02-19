@@ -15,6 +15,7 @@ class network(object):
 			self.tf_embeddings = tf.Variable(tf.constant(0.0, shape=[embeddings.shape[0], embeddings.shape[1]]), trainable=False, name="tf_embeddings")
 			self.embedding_placeholder = tf.placeholder(tf.float32, [embeddings.shape[0], embeddings.shape[1]])
 			self.embedding_init = self.tf_embeddings.assign(self.embedding_placeholder)  # initialize this once  with sess.run when the session begins
+			self.svd_vectors = tf.placeholder(tf.float32, [FLAGS.batch_size, 300])
 
 			# create GRU cells
 			with tf.variable_scope("tweet"):

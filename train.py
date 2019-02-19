@@ -20,6 +20,22 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 			sess.run(init)
 			sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
 
+			training_vectors = read_svd_features(FLAGS.training_svm_vector_path)
+
+			training_svm_vectors = []
+			print(np.shape(valid_users))
+			print(type(valid_users))
+			print(valid_users[0])
+			print(valid_users[0][0])
+			print(valid_users[0][0][0])
+
+			for i in range(len(valid_users)):
+				for vec in training_vectors:
+					if vec[0] == valid_users[i]:
+						training_svm_vectors.append(training_vectors[1])
+
+			training_svm_vectors = np.asarray(training_svm_vectors)
+
 
 			#load the model from checkpoint file if it is required
 			if FLAGS.use_pretrained_model == True:
