@@ -29,7 +29,7 @@ class network(object):
 			self.reg_param = tf.placeholder(tf.float32, shape=[])
 
 			# weigths
-			self.weights = {'fc1': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, FLAGS.num_classes]), name="fc1-weights"),
+			self.weights = {'fc1': tf.Variable(tf.random_normal([(2*FLAGS.rnn_cell_size)+300, FLAGS.num_classes]), name="fc1-weights"),
 							'att1-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att1-weights"),
 							'att1-v': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size]), name="att1-vector"),
 							'att2-w': tf.Variable(tf.random_normal([2 * FLAGS.rnn_cell_size, 2 * FLAGS.rnn_cell_size]), name="att2-weights"),
@@ -58,8 +58,10 @@ class network(object):
 			self.attentions_word = tf.nn.softmax(tf.tensordot(self.att_context_vector_word, self.weights["att2-v"], axes=1))
 			self.attention_output_word = tf.reduce_sum(self.attention_output * tf.expand_dims(self.attentions_word, -1), 1)
 
+			self.concatenated_user_vec = tf.concat([self.attention_output_word, self.svd_vectors], 1)
+
 			# FC layer for reducing the dimension to 2(# of classes)
-			self.logits = tf.tensordot(self.attention_output_word, self.weights["fc1"], axes=1) + self.bias["fc1"]
+			self.logits = tf.tensordot(self.concatenated_user_vec, self.weights["fc1"], axes=1) + self.bias["fc1"]
 
 			# predictions
 			self.prediction = tf.nn.softmax(self.logits)

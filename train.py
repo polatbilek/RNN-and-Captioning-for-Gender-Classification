@@ -20,22 +20,7 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 			sess.run(init)
 			sess.run(network.embedding_init, feed_dict={network.embedding_placeholder: embeddings})
 
-			training_vectors = read_svd_features(FLAGS.training_svm_vector_path)
-
-			training_svm_vectors = []
-			print(np.shape(valid_users))
-			print(type(valid_users))
-			print(valid_users[0])
-			print(valid_users[0][0])
-			print(valid_users[0][0][0])
-
-			for i in range(len(valid_users)):
-				for vec in training_vectors:
-					if vec[0] == valid_users[i]:
-						training_svm_vectors.append(training_vectors[1])
-
-			training_svm_vectors = np.asarray(training_svm_vectors)
-
+			training_svd_vectors = read_svd_features(FLAGS.training_svd_vector_path)
 
 			#load the model from checkpoint file if it is required
 			if FLAGS.use_pretrained_model == True:
@@ -58,15 +43,17 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 				#TRAINING
 				for batch in range(training_batch_count):
 					#prepare the batch
-					training_batch_x, training_batch_y, training_batch_seqlen = prepWordBatchData(training_tweets, training_users, target_values, training_seq_lengths, batch)
+					training_batch_x, training_batch_y, training_batch_seqlen, training_batch_users = prepWordBatchData(training_tweets, training_users, target_values, training_seq_lengths, batch)
 					training_batch_x = word2id(training_batch_x, vocabulary)
+
+					training_batch_svd_vectors = prepBatchSVD(training_batch_users, training_svd_vectors)
 
 					#Flatten everything to feed RNN
 					training_batch_x = np.reshape(training_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(training_batch_x)[2]))
 					training_batch_seqlen = np.reshape(training_batch_seqlen, (-1))
 
 					#run the graph
-					feed_dict = {network.X: training_batch_x, network.Y: training_batch_y, network.sequence_length: training_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
+					feed_dict = {network.X: training_batch_x, network.Y: training_batch_y, network.sequence_length: training_batch_seqlen, network.svd_vectors:training_batch_svd_vectors, network.reg_param: FLAGS.l2_reg_lambda}
 					_, loss, prediction, accuracy = sess.run([network.train, network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
 					#calculate the metrics
@@ -87,22 +74,26 @@ def train(network, training_tweets, training_users, training_seq_lengths, valid_
 
 
 
+
 				#VALIDATION     
 				batch_accuracy = 0.0
 				batch_loss = 0.0
 
+
 				for batch in range(valid_batch_count):
 
 					#prepare the batch
-					valid_batch_x, valid_batch_y, valid_batch_seqlen = prepWordBatchData(valid_tweets, valid_users, target_values, valid_seq_lengths, batch)
+					valid_batch_x, valid_batch_y, valid_batch_seqlen, valid_batch_users = prepWordBatchData(valid_tweets, valid_users, target_values, valid_seq_lengths, batch)
 					valid_batch_x = word2id(valid_batch_x, vocabulary)
+
+					valid_batch_svd_vectors = prepBatchSVD(valid_batch_users, training_svd_vectors)
 
 					#Flatten everything to feed RNN
 					valid_batch_x = np.reshape(valid_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(valid_batch_x)[2]))
 					valid_batch_seqlen = np.reshape(valid_batch_seqlen, (-1)) # to flatten list, pass [-1] as shape
 
 					#run the graph
-					feed_dict = {network.X: valid_batch_x, network.Y: valid_batch_y, network.sequence_length: valid_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
+					feed_dict = {network.X: valid_batch_x, network.Y: valid_batch_y, network.sequence_length: valid_batch_seqlen, network.svd_vectors:valid_batch_svd_vectors, network.reg_param: FLAGS.l2_reg_lambda}
 					loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
 					#calculate the metrics

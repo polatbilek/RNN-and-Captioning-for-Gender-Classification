@@ -114,7 +114,42 @@ def readData(path):
     return tweets, users, target_values, seq_lengths
 
 
+#########################################################################################################################
+# Reads training dataset
+# one-hot vectors: female = [0,1]
+#		           male   = [1,0]
+#
+# input:  string = path to the zip-file corresponding to the training data
+# output: list ("tweets") = List of shape (# of users, 2),  2 = [user_id, vector]
+#
+def read_svd_features(path):
+	user_info = []
 
+	f = open(path, "r")
+
+	for line in f:
+		splitted = line.strip().split(":::")
+		vec = list(map(float, splitted[1].split(",")))
+		username = str(splitted[0])
+
+		user_info.append([username, vec])
+
+
+	f.close()
+
+	return user_info
+
+
+def prepBatchSVD(users, svd_vectors):
+
+	batch_vectors = []
+
+	for user in users:
+		for vec in svd_vectors:
+			if vec[0] == user[0]:
+				batch_vectors.append(vec[1])
+
+	return batch_vectors
 
 
 
@@ -300,6 +335,7 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 	tweet_batches = np.reshape(np.asarray(batch_input), (FLAGS.batch_size, FLAGS.tweet_per_user, max_tweet_length)).tolist()
 	target_batches = np.reshape(np.asarray(batch_targets), (FLAGS.batch_size, FLAGS.tweet_per_user, 2)).tolist()
 	seqlen_batches = np.reshape(np.asarray(batch_sequencelen), (FLAGS.batch_size, FLAGS.tweet_per_user)).tolist()
+	batch_users = np.reshape(np.asarray(batch_users), (FLAGS.batch_size, FLAGS.tweet_per_user)).tolist()
 
 	#prepare the target values
 	target_values = []
@@ -308,13 +344,14 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 	target_batches = np.reshape(np.asarray(target_values), (FLAGS.batch_size, 2)).tolist()
 
 	#user level shuffling
-	c = list(zip(tweet_batches, target_batches, seqlen_batches))
+	c = list(zip(tweet_batches, target_batches, seqlen_batches, batch_users))
 	random.shuffle(c)
-	tweet_batches, target_batches, seqlen_batches = zip(*c)
+	tweet_batches, target_batches, seqlen_batches, batch_users = zip(*c)
 
 	tweet_batches = list(tweet_batches)
 	target_values = list(target_values)
 	seqlen_batches = list(seqlen_batches)
+	batch_users = list(batch_users)
 
 	#tweet level shuffling
 	for i in range(FLAGS.batch_size):
@@ -325,7 +362,7 @@ def prepWordBatchData(tweets, users, targets, seq_len, iter_no):
 	tweet_batches = list(tweet_batches)
 	seqlen_batches = list(seqlen_batches)
 
-	return tweet_batches, target_batches, seqlen_batches
+	return tweet_batches, target_batches, seqlen_batches, batch_users
 
 
 

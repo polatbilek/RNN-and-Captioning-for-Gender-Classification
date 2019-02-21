@@ -17,6 +17,8 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 	with tf.device('/device:GPU:0'):
 		with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
 
+			test_svd_vectors = read_svd_features(FLAGS.test_svd_vector_path)
+
 			# init variables
 			init = tf.global_variables_initializer()
 			sess.run(init)
@@ -36,15 +38,17 @@ def test(network, test_tweets, test_users, test_seq_lengths, target_values, voca
 			for batch in range(batch_count):
 
 				#prepare the batch
-				test_batch_x, test_batch_y, test_batch_seqlen = prepWordBatchData(test_tweets, test_users, target_values, test_seq_lengths, batch)
+				test_batch_x, test_batch_y, test_batch_seqlen, test_batch_users = prepWordBatchData(test_tweets, test_users, target_values, test_seq_lengths, batch)
 				test_batch_x = word2id(test_batch_x, vocabulary)
+
+				test_batch_svd_vectors = prepBatchSVD(test_batch_users, test_svd_vectors)
 
 				#Flatten everything to feed RNN
 				test_batch_x = np.reshape(test_batch_x, (FLAGS.batch_size*FLAGS.tweet_per_user, np.shape(test_batch_x)[2]))
 				test_batch_seqlen = np.reshape(test_batch_seqlen, (-1)) # to flatten list, pass [-1] as shape
 			
 				#run the graph
-				feed_dict = {network.X: test_batch_x, network.Y: test_batch_y, network.sequence_length: test_batch_seqlen, network.reg_param: FLAGS.l2_reg_lambda}
+				feed_dict = {network.X: test_batch_x, network.Y: test_batch_y, network.sequence_length: test_batch_seqlen, network.svd_vectors: test_batch_svd_vectors, network.reg_param: FLAGS.l2_reg_lambda}
 				loss, prediction, accuracy = sess.run([network.loss, network.prediction, network.accuracy], feed_dict=feed_dict)
 
 				#calculate the metrics
