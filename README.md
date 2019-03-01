@@ -1,7 +1,7 @@
 # RNN and Captioning for Gender Classification
 Gender Classification From Tweets and Posted Images
 
-# Requirements
+## Requirements
 - Python 2.7 (it may work on python3 as well, not guaranteed)
 - (Preferable) CUDA 9.0 and Nvidia GPU compatible with CUDA 
 - Word embeddings, we prefer GLoVe (https://nlp.stanford.edu/projects/glove/)
@@ -14,7 +14,7 @@ _Packages_:
 * NLTK
 * Matplotlib
 
-# Usage
+## Usage
 - To change parameters you can use parameters.py file, it has all paths, hyperparameters, dimension fields.
 
 - Run.sh make it easy to test several languages and parameters in one big run. After each language Training&Testing it calls model deleter which deletes each saved model but the first 5.
